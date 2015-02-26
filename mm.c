@@ -26,10 +26,10 @@
  *
  * === User information ===
  * Group: 
- * User 1: 
- * SSN: X
- * User 2: 
- * SSN: X
+ * User 1: sigurdura13 
+ * SSN: 201192-2189
+ * User 2: hafthor12
+ * SSN: 220492-2819
  * === End User Information ===
  ********************************************************/
 team_t team = {
