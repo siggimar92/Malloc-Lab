@@ -26,9 +26,9 @@
  *
  * === User information ===
  * Group: The lone riders 
- * User 1: Sigurður Már Atlason
+ * User 1: sigurdura13
  * SSN: 201192-2189
- * User 2: Hafþór Snær Þórsson
+ * User 2: hafthort12
  * SSN: 220492-2819
  * === End User Information ===
  ********************************************************/
