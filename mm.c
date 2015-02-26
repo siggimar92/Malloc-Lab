@@ -34,15 +34,15 @@
  ********************************************************/
 team_t team = {
     /* Group name */
-    "STY15_Forever",
+    "the_lone_riders",
     /* First member's full name */
-    "Freysteinn Alfredsson",
+    "Sigurður Már Atlason",
     /* First member's email address */
-    "freysteinn@ru.is",
+    "sigurdura13@ru.is",
     /* Second member's full name (leave blank if none) */
-    "",
+    "Hafþór Snær Þórsson",
     /* Second member's email address (leave blank if none) */
-    "",
+    "hafthor12@ru.is",
     /* Leave blank */
     "",
     /* Leave blank */
