@@ -42,7 +42,7 @@ team_t team = {
     /* Second member's full name (leave blank if none) */
     "Hafþór Snær Þórsson",
     /* Second member's email address (leave blank if none) */
-    "hafthor12@ru.is",
+    "hafthort12@ru.is",
     /* Leave blank */
     "",
     /* Leave blank */
