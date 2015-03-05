@@ -56,7 +56,7 @@
  * struct that follows.
  *
  * === User information ===
- * Group: The lone riders 
+ * Group: The_lone_riders
  * User 1: sigurdura13
  * SSN: 201192-2189
  * User 2: hafthort12
