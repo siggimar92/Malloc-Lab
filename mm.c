@@ -6,10 +6,41 @@
  * footers.  Blocks are never coalesced or reused. Realloc is
  * implemented directly using mm_malloc and mm_free.
  *
- * NOTE TO STUDENTS: Replace this header comment with your own header
- * comment that gives a high level description of your solution.
+ * 
+ *
+ *
+ * ************** HANDIN 1 - Description *****************
+ * 
+ * Dynamic memory allocator.
+ * We will use explicit list to keep track of the memory.
+ * We will keep track of both free blocks and allocated blocks.
+ * Each block will contain a header and a footer.
+ *
+ * The header will include informations about if the block is allocated 
+ * or not giving it the value 1 if it is allocated or 0 if not.
+ * It will also include information about the size of the block.
+ *
+ * The footer will serve the same purpose as the header and store the same 
+ * information at the end of the block. This information can be used to 
+ * navigate the list backwards and will be used in the Coalesce function.
+ *
+ * The Coalesce function is used to merge two free blocks aligned side by 
+ * side to keep track of the real free space instead of spliced sizes.
+ * example:   [ 4 |  |  |  | 4 |  |  |  | 4 |  |  |  | 2 |  | 2 |  ]
+ *              free         alloc        free         free   alloc
+ * malloc(5)
+ *            this cannot happen unless we call the coalesce function before 
+ *            to merge the two free aligning blocks.
+ *
+ * We will use the Best fit method to allocate the memory to best fit the 
+ * external fragmentation. This will result in a bit slower memory allocation 
+ * but better fragmented and therefore better utilised allocation. This method 
+ * runs trough the entire heap each time a malloc is performed, and tries to 
+ * find the free block of the size closest to the memory size that is being 
+ * allocated.
  *
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
