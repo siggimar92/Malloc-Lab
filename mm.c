@@ -126,7 +126,6 @@ static void checkblock(void *bp);
 /* rounds up to the nearest multiple of ALIGNMENT */
 #define ALIGN(size) (((size) + (ALIGNMENT-1)) & ~0x7)
 
-
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
 /* 
@@ -141,6 +140,7 @@ int mm_init(void)
       /* create the initial empty heap */
     if ((heap_listp = mem_sbrk(4*WSIZE)) == NULL)
         return -1;
+
     PUT(heap_listp, 0);                        /* alignment padding */
     PUT(heap_listp+WSIZE, PACK(OVERHEAD, 1));  /* prologue header */ 
     PUT(heap_listp+DSIZE, PACK(OVERHEAD, 1));  /* prologue footer */ 
