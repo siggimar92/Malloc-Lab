@@ -96,7 +96,7 @@ team_t team = {
 #define GET(p)       (*(size_t *)(p))
 #define PUT(p, val)  (*(size_t *)(p) = (val))  
 
-/* (which is about 54/100).* Read the size and allocated fields from address p */
+/* Read the size and allocated fields from address p */
 #define GET_SIZE(p)  (GET(p) & ~0x7)
 #define GET_ALLOC(p) (GET(p) & 0x1)
 
@@ -343,15 +343,55 @@ void mm_checkheap(int verbose)
  */
 static void *find_fit(size_t asize)
 {
-    /* first fit search */
-    void *bp;
+    /* best fit search */
+    void *bp = heap_listp;
+    void *tmpPtr = bp; /* stores the ptr to the best fitting block so far */
+    
+    // heap_lisp = ptr to first bp
+    // GET_SIZE(HDRP(bp)) = size of block
 
-    for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
-        if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) {
-            return bp;
+    if (asize == NULL)
+    {
+        return NULL;
+    }
+    assert(asize > 0);
+
+    for (; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) 
+    {
+        if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) 
+        {
+            assert(asize > GET_SIZE(HDRP(bp)));
+            if (asize == GET_SIZE(HDRP(bp))) 
+            {
+                return bp;
+            }
+            else 
+            {
+                if (GET_SIZE(HDRP(bp)) < tmpPtr)
+                {
+                    tmpPtr = GET_SIZE(HDRP(bp));
+                }
+            }
         }
     }
-    return NULL; /* no fit */
+
+    /* ????????? ef tmpptr sem er settur sem heap_listp i byrjun er staerri en asize tha return 0 */
+    if (tmpPtr > asize)
+    {
+        return NULL;
+    }
+    
+    return tmpPtr;
+
+    // /* first fit search */
+    // void *bp;
+
+    // for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
+    //     if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) {
+    //         return bp;
+    //     }
+    // }
+    // return NULL; /* no fit */
 }
 
 static void printblock(void *bp) 
