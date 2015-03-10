@@ -80,6 +80,46 @@ team_t team = {
     ""
 };
 
+/* $begin mallocmacros */
+/* Basic constants and macros */
+#define WSIZE       4       /* word size (bytes) */  
+#define DSIZE       8       /* doubleword size (bytes) */
+#define CHUNKSIZE  (1<<12)  /* initial heap size (bytes) */
+#define OVERHEAD    8       /* overhead of header and footer (bytes) */
+
+#define MAX(x, y) ((x) > (y)? (x) : (y))  
+
+/* Pack a size and allocated bit into a word */
+#define PACK(size, alloc)  ((size) | (alloc))
+
+/* Read and write a word at address p */
+#define GET(p)       (*(size_t *)(p))
+#define PUT(p, val)  (*(size_t *)(p) = (val))  
+
+/* (which is about 54/100).* Read the size and allocated fields from address p */
+#define GET_SIZE(p)  (GET(p) & ~0x7)
+#define GET_ALLOC(p) (GET(p) & 0x1)
+
+/* Given block ptr bp, compute address of its header and footer */
+#define HDRP(bp)       ((char *)(bp) - WSIZE)  
+#define FTRP(bp)       ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE)
+
+/* Given block ptr bp, compute address of next and previous blocks */
+#define NEXT_BLKP(bp)  ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE)))
+#define PREV_BLKP(bp)  ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE)))
+/* $end mallocmacros */
+
+/* Global variables */
+static char *heap_listp;  /* pointer to first block */  
+
+/* function prototypes for internal helper routines */
+static void *extend_heap(size_t words);
+static void place(void *bp, size_t asize);
+static void *find_fit(size_t asize);
+static void *coalesce(void *bp);
+static void printblock(void *bp); 
+static void checkblock(void *bp);
+
 /* single word (4) or double word (8) alignment */
 #define ALIGNMENT 8
 
@@ -98,6 +138,18 @@ int mm_init(void)
      * initialize all global variables and call all necessary initializations, 
      * the function returns -1 if this fails. 
      */
+      /* create the initial empty heap */
+    if ((heap_listp = mem_sbrk(4*WSIZE)) == NULL)
+        return -1;
+    PUT(heap_listp, 0);                        /* alignment padding */
+    PUT(heap_listp+WSIZE, PACK(OVERHEAD, 1));  /* prologue header */ 
+    PUT(heap_listp+DSIZE, PACK(OVERHEAD, 1));  /* prologue footer */ 
+    PUT(heap_listp+WSIZE+DSIZE, PACK(0, 1));   /* epilogue header */
+    heap_listp += DSIZE;
+
+    /* Extend the empty heap with a free block of CHUNKSIZE bytes */
+    if (extend_heap(CHUNKSIZE/WSIZE) == NULL)
+        return -1;
     return 0;
 }
 
@@ -117,14 +169,43 @@ void *mm_malloc(size_t size)
      * function will return null.
      */
 
-    int newsize = ALIGN(size + SIZE_T_SIZE);
-    void *p = mem_sbrk(newsize);
-    if (p == (void *)-1)
+    // from old file:
+
+    // int newsize = ALIGN(size + SIZE_T_SIZE);
+    // void *p = mem_sbrk(newsize);
+    // if (p == (void *)-1)
+    //     return NULL;
+    // else {
+    //     *(size_t *)p = size;
+    //     return (void *)((char *)p + SIZE_T_SIZE);
+    // }
+
+    size_t asize;      /* adjusted block size */
+    size_t extendsize; /* amount to extend heap if no fit */
+    char *bp;      
+
+    /* Ignore spurious requests */
+    if (size <= 0)
         return NULL;
-    else {
-        *(size_t *)p = size;
-        return (void *)((char *)p + SIZE_T_SIZE);
+
+    /* Adjust block size to include overhead and alignment reqs. */
+    if (size <= DSIZE)
+        asize = DSIZE + OVERHEAD;
+    else
+        asize = DSIZE * ((size + (OVERHEAD) + (DSIZE-1)) / DSIZE);
+    
+    /* Search the free list for a fit */
+    if ((bp = find_fit(asize)) != NULL) {
+        place(bp, asize);
+        return bp;
     }
+
+    /* No fit found. Get more memory and place the block */
+    extendsize = MAX(asize,CHUNKSIZE);
+    if ((bp = extend_heap(extendsize/WSIZE)) == NULL)
+        return NULL;
+    place(bp, asize);
+    return bp;
 }
 
 /*
@@ -138,6 +219,12 @@ void mm_free(void *ptr)
      * the ptr was returned using malloc or realloc and has
      * not been freed yet. 
      */
+
+    size_t size = GET_SIZE(HDRP(bp));
+
+    PUT(HDRP(bp), PACK(size, 0));
+    PUT(FTRP(bp), PACK(size, 0));
+    coalesce(bp);
 }
 
 /*
@@ -160,19 +247,36 @@ void *mm_realloc(void *ptr, size_t size)
      * 
      * If size = 0 it is equalent to calling free
      */
-    void *oldptr = ptr;
-    void *newptr;
-    size_t copySize;
+
+    // from old file:
+
+    // void *oldptr = ptr;
+    // void *newptr;
+    // size_t copySize;
     
-    newptr = mm_malloc(size);
-    if (newptr == NULL)
-        return NULL;
-    copySize = *(size_t *)((char *)oldptr - SIZE_T_SIZE);
+    // newptr = mm_malloc(size);
+    // if (newptr == NULL)
+    //     return NULL;
+    // copySize = *(size_t *)((char *)oldptr - SIZE_T_SIZE);
+    // if (size < copySize)
+    //     copySize = size;
+    // memcpy(newptr, oldptr, copySize);
+    // mm_free(oldptr);
+    // return newptr;
+
+    void *newp;
+    size_t copySize;
+
+    if ((newp = mm_malloc(size)) == NULL) {
+        printf("ERROR: mm_malloc failed in mm_realloc\n");
+        exit(1);
+    }
+    copySize = GET_SIZE(HDRP(ptr));
     if (size < copySize)
         copySize = size;
-    memcpy(newptr, oldptr, copySize);
-    mm_free(oldptr);
-    return newptr;
+    memcpy(newp, ptr, copySize);
+    mm_free(ptr);
+    return newp;
 }
 
 
@@ -210,3 +314,71 @@ static void *coalesce(void *bp)
 
     return bp;
 }
+
+void mm_checkheap(int verbose) 
+{
+    char *bp = heap_listp;
+
+    if (verbose)
+        printf("Heap (%p):\n", heap_listp);
+
+    if ((GET_SIZE(HDRP(heap_listp)) != DSIZE) || !GET_ALLOC(HDRP(heap_listp)))
+        printf("Bad prologue header\n");
+    checkblock(heap_listp);
+
+    for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
+        if (verbose) 
+            printblock(bp);
+        checkblock(bp);
+    }
+     
+    if (verbose)
+        printblock(bp);
+    if ((GET_SIZE(HDRP(bp)) != 0) || !(GET_ALLOC(HDRP(bp))))
+        printf("Bad epilogue header\n");
+}
+
+/* 
+ * find_fit - Find a fit for a block with asize bytes 
+ */
+static void *find_fit(size_t asize)
+{
+    /* first fit search */
+    void *bp;
+
+    for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
+        if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) {
+            return bp;
+        }
+    }
+    return NULL; /* no fit */
+}
+
+static void printblock(void *bp) 
+{
+    size_t hsize, halloc, fsize, falloc;
+
+    hsize = GET_SIZE(HDRP(bp));
+    halloc = GET_ALLOC(HDRP(bp));  
+    fsize = GET_SIZE(FTRP(bp));
+    falloc = GET_ALLOC(FTRP(bp));  
+    
+    if (hsize == 0) {
+        printf("%p: EOL\n", bp);
+        return;
+    }
+
+    printf("%p: header: [%d:%c] footer: [%d:%c]\n", bp, 
+           hsize, (halloc ? 'a' : 'f'), 
+           fsize, (falloc ? 'a' : 'f')); 
+}
+
+static void checkblock(void *bp) 
+{
+    if ((size_t)bp % 8)
+        printf("Error: %p is not doubleword aligned\n", bp);
+    if (GET(HDRP(bp)) != GET(FTRP(bp)))
+        printf("Error: header does not match footer\n");
+}
+
+
