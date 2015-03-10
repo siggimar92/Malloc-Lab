@@ -350,7 +350,7 @@ static void *find_fit(size_t asize)
     // heap_lisp = ptr to first bp
     // GET_SIZE(HDRP(bp)) = size of block
 
-    if (asize == NULL)
+    if (asize <= 0)
     {
         return NULL;
     }
@@ -360,23 +360,22 @@ static void *find_fit(size_t asize)
     {
         if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) 
         {
-            assert(asize > GET_SIZE(HDRP(bp)));
             if (asize == GET_SIZE(HDRP(bp))) 
             {
                 return bp;
             }
             else 
             {
-                if (GET_SIZE(HDRP(bp)) < tmpPtr)
+                if (GET_SIZE(HDRP(bp)) < GET_SIZE(HDRP(tmpPtr)))
                 {
-                    tmpPtr = GET_SIZE(HDRP(bp));
+                    tmpPtr = bp;
                 }
             }
         }
     }
 
     /* ????????? ef tmpptr sem er settur sem heap_listp i byrjun er staerri en asize tha return 0 */
-    if (tmpPtr > asize)
+    if (GET_SIZE(HDRP(tmpPtr)) > asize)
     {
         return NULL;
     }
