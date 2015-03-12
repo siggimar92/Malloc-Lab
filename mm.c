@@ -694,17 +694,22 @@ static void insertFree(void *bp)
 /* $begin mmremoveFree */
 static void removeFree(void *bp)
 {
-    if (free_listp == NULL) {
-        return;
-    }
-    if (PREV_FREE(bp) == NULL) {
-        free_listp = NEXT_FREE(bp);
-        // PREV_FREE(free_listp) = NULL;
-        PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
-    } else {
-        NEXT_FREE(PREV_FREE(bp)) = NEXT_FREE(bp);
-        PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
-    }
+    // if (free_listp == NULL) {
+    //     return;
+    // }
+    // if (PREV_FREE(bp) == NULL) {
+    //     free_listp = NEXT_FREE(bp);
+    //     // PREV_FREE(free_listp) = NULL;
+    //     PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
+    // } else {
+    //     NEXT_FREE(PREV_FREE(bp)) = NEXT_FREE(bp);
+    //     PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
+    // }
+    if (PREV_FREEP(bp)) 
+        NEXT_FREEP(PREV_FREEP(bp)) = NEXT_FREEP(bp);
+    else
+        free_listp = NEXT_FREEP(bp); 
+    PREV_FREEP(NEXT_FREEP(bp)) = PREV_FREEP(bp);
 }
 /* $end mmremoveFree */
 
