@@ -702,7 +702,7 @@ static void removeFree(void *bp)
         NEXT_FREE(PREV_FREE(bp)) = NEXT_FREE(bp);
         PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
     }
-
+}
 /* $end mmremoveFree */
 
 
