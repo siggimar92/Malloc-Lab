@@ -362,7 +362,7 @@ void *mm_realloc(void *ptr, size_t size)
 
         PUT(HDRP(ptr), PACK(asize, 1));
         PUT(FTRP(ptr), PACK(asize, 1));
-        removeFree(ptr);
+        //removeFree(ptr);
         void *tmpPtr = NEXT_BLKP(ptr);
         PUT(HDRP(tmpPtr), PACK(newSize, 0));
         PUT(FTRP(tmpPtr), PACK(newSize, 0));
@@ -385,7 +385,7 @@ void *mm_realloc(void *ptr, size_t size)
             if (newSize < MINSIZE) {
                 PUT(HDRP(ptr), PACK(newTotalSize, 1));
                 PUT(FTRP(ptr), PACK(newTotalSize, 1));
-                removeFree(ptr);
+                //removeFree(ptr);
 
                 // printf("After realloc\n");
                 //mm_checkheap(VERBOSE);
@@ -395,7 +395,7 @@ void *mm_realloc(void *ptr, size_t size)
             else {
                 PUT(HDRP(ptr), PACK(asize, 1));
                 PUT(FTRP(ptr), PACK(asize, 1));
-                removeFree(ptr);
+                //removeFree(ptr);
                 void *tmpPtr = NEXT_BLKP(ptr);
                 PUT(HDRP(tmpPtr), PACK(newSize, 0));
                 PUT(FTRP(tmpPtr), PACK(newSize, 0));
@@ -412,7 +412,7 @@ void *mm_realloc(void *ptr, size_t size)
 
             PUT(HDRP(ptr), PACK(asize, 1));
             PUT(FTRP(ptr), PACK(asize, 1));
-            removeFree(ptr);
+            //removeFree(ptr);
             void *tmpPtr = NEXT_BLKP(ptr);
             PUT(HDRP(tmpPtr), PACK(newSize, 0));
             PUT(FTRP(tmpPtr), PACK(newSize, 0));
@@ -523,7 +523,7 @@ static void *coalesce(void *bp)
     /* Case 2 - next block to the right can be merged */
     else if (prev_alloc && !next_alloc) {
         size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
-        removeFree(NEXT_BLKP(bp));
+        //removeFree(NEXT_BLKP(bp));
         PUT(HDRP(bp), PACK(size, 0));
         PUT(FTRP(bp), PACK(size,0));
     }
@@ -531,7 +531,7 @@ static void *coalesce(void *bp)
     /* Case 3 - previous block to the left can be merged */
     else if (!prev_alloc && next_alloc) {
         size += GET_SIZE(HDRP(PREV_BLKP(bp)));
-        removeFree(PREV_BLKP(bp));
+        //removeFree(PREV_BLKP(bp));
         //PUT(FTRP(bp), PACK(size, 0));
         PUT(FTRP(PREV_BLKP(bp)), PACK(size, 0));
         PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
@@ -542,8 +542,8 @@ static void *coalesce(void *bp)
     else {
         size += GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(FTRP(NEXT_BLKP(bp)));
 
-        removeFree(NEXT_BLKP(bp));
-        removeFree(PREV_BLKP(bp));
+        // removeFree(NEXT_BLKP(bp));
+        // removeFree(PREV_BLKP(bp));
 
         //PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
         //PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
@@ -556,7 +556,7 @@ static void *coalesce(void *bp)
     // printf("After Coalesce\n");
     //mm_checkheap(VERBOSE);
 
-    insertFree(bp);
+    //insertFree(bp);
     return bp;
 }
 
@@ -706,7 +706,7 @@ static void place(void *bp, size_t asize)
     if ((csize - asize) >= (DSIZE + OVERHEAD)) { 
         PUT(HDRP(bp), PACK(asize, 1));
         PUT(FTRP(bp), PACK(asize, 1));
-        removeFree(bp);
+        //removeFree(bp);
         bp = NEXT_BLKP(bp);
         PUT(HDRP(bp), PACK(csize-asize, 0));
         PUT(FTRP(bp), PACK(csize-asize, 0));
@@ -715,7 +715,7 @@ static void place(void *bp, size_t asize)
     else { 
         PUT(HDRP(bp), PACK(csize, 1));
         PUT(FTRP(bp), PACK(csize, 1));
-        removeFree(bp);
+        //removeFree(bp);
     }
 
     // printf("After place\n");
