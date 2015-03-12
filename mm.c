@@ -84,10 +84,12 @@ team_t team = {
 /* Basic constants and macros */
 #define WSIZE       4       /* word size (bytes) */  
 #define DSIZE       8       /* doubleword size (bytes) */
-#define CHUNKSIZE  (1<<12)  /* initial heap size (bytes) */
+#define CHUNKSIZE  (1<<12)  /* initial heap size (bytes) = 4096 byte = 4GB */
 #define OVERHEAD    8       /* overhead of header and footer (bytes) */
+#define MINSIZE     16      /* Minumum block size - header + footer + prev free + next free */
 
-#define MAX(x, y) ((x) > (y)? (x) : (y))  
+#define MAX(x, y) ((x) > (y)? (x) : (y))  /* MAXimum comparison */
+#define MIN(x, y) ((x) < (y)? (x) : (y))  /* Minimum comparison */ 
 
 /* Pack a size and allocated bit into a word */
 #define PACK(size, alloc)  ((size) | (alloc))
@@ -110,7 +112,8 @@ team_t team = {
 /* $end mallocmacros */
 
 /* Global variables */
-static char *heap_listp;  /* pointer to first block */  
+static char *heap_listp;  /* pointer to first block */
+static char *free_listp;  /* pointer to first free block */
 
 /* function prototypes for internal helper routines */
 static void *extend_heap(size_t words);
@@ -138,18 +141,21 @@ int mm_init(void)
      * the function returns -1 if this fails. 
      */
       /* create the initial empty heap */
-    if ((heap_listp = mem_sbrk(4*WSIZE)) == NULL)
+    if ((heap_listp = mem_sbrk(4*WSIZE)) == NULL) {
         return -1;
+    }
 
     PUT(heap_listp, 0);                        /* alignment padding */
-    PUT(heap_listp+WSIZE, PACK(OVERHEAD, 1));  /* prologue header */ 
+    PUT(heap_listp+WSIZE, PACK(OVERHEAD, 1));  /* prologue header - WZISE = padding */ 
     PUT(heap_listp+DSIZE, PACK(OVERHEAD, 1));  /* prologue footer */ 
     PUT(heap_listp+WSIZE+DSIZE, PACK(0, 1));   /* epilogue header */
     heap_listp += DSIZE;
+    free_listp = heap_listp + DSIZE;
 
     /* Extend the empty heap with a free block of CHUNKSIZE bytes */
-    if (extend_heap(CHUNKSIZE/WSIZE) == NULL)
+    if (extend_heap(CHUNKSIZE/WSIZE) == NULL) {
         return -1;
+    }
     return 0;
 }
 
@@ -182,7 +188,7 @@ void *mm_malloc(size_t size)
 
     size_t asize;      /* adjusted block size */
     size_t extendsize; /* amount to extend heap if no fit */
-    char *bp;      
+    char *bp;
 
     /* Ignore spurious requests */
     if (size <= 0)
@@ -343,54 +349,54 @@ void mm_checkheap(int verbose)
  */
 static void *find_fit(size_t asize)
 {
-    /* best fit search */
-    void *bp = heap_listp;
-    void *tmpPtr = bp; /* stores the ptr to the best fitting block so far */
+    // /* best fit search */
+    // void *bp = heap_listp;
+    // void *tmpPtr = bp; /* stores the ptr to the best fitting block so far */
     
-    // heap_lisp = ptr to first bp
-    // GET_SIZE(HDRP(bp)) = size of block
+    // // heap_lisp = ptr to first bp
+    // // GET_SIZE(HDRP(bp)) = size of block
 
-    if (asize <= 0)
-    {
-        return NULL;
-    }
-    assert(asize > 0);
+    // if (asize <= 0)
+    // {
+    //     return NULL;
+    // }
+    // assert(asize > 0);
 
-    for (; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) 
-    {
-        if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) 
-        {
-            if (asize == GET_SIZE(HDRP(bp))) 
-            {
-                return bp;
-            }
-            else 
-            {
-                if (GET_SIZE(HDRP(bp)) < GET_SIZE(HDRP(tmpPtr)))
-                {
-                    tmpPtr = bp;
-                }
-            }
-        }
-    }
-
-    /* ????????? ef tmpptr sem er settur sem heap_listp i byrjun er staerri en asize tha return 0 */
-    if (GET_SIZE(HDRP(tmpPtr)) > asize)
-    {
-        return NULL;
-    }
-    
-    return tmpPtr;
-
-    // /* first fit search */
-    // void *bp;
-
-    // for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
-    //     if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) {
-    //         return bp;
+    // for (; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) 
+    // {
+    //     if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) 
+    //     {
+    //         if (asize == GET_SIZE(HDRP(bp))) 
+    //         {
+    //             return bp;
+    //         }
+    //         else 
+    //         {
+    //             if (GET_SIZE(HDRP(bp)) < GET_SIZE(HDRP(tmpPtr)))
+    //             {
+    //                 tmpPtr = bp;
+    //             }
+    //         }
     //     }
     // }
-    // return NULL; /* no fit */
+
+    // /* ????????? ef tmpptr sem er settur sem heap_listp i byrjun er staerri en asize tha return 0 */
+    // if (GET_SIZE(HDRP(tmpPtr)) > asize)
+    // {
+    //     return NULL;
+    // }
+    
+    // return tmpPtr;
+
+    /* first fit search */
+    void *bp;
+
+    for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
+        if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) {
+            return bp;
+        }
+    }
+    return NULL; /* no fit */
 }
 
 static void printblock(void *bp) 
