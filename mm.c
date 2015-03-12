@@ -725,64 +725,64 @@ static void place(void *bp, size_t asize)
 
 /* insertFree - Inserts a free block to the front of the free list */
 /* $begin mminsertFree */
-static void insertFree(void *bp)
-{
-    // printf("\nBefore insertFree\n");
-    //mm_checkheap(VERBOSE);
+// static void insertFree(void *bp)
+// {
+//     // printf("\nBefore insertFree\n");
+//     //mm_checkheap(VERBOSE);
 
-    if (free_listp == NULL) {
-        NEXT_FREE(bp) = NULL;
-        PREV_FREE(bp) = NULL;
-        free_listp = bp;
-    } else {
-        NEXT_FREE(bp) = free_listp;
-        PREV_FREE(free_listp) = bp;
-        PREV_FREE(bp) = NULL;
-        free_listp = bp;
-    }
+//     if (free_listp == NULL) {
+//         NEXT_FREE(bp) = NULL;
+//         PREV_FREE(bp) = NULL;
+//         free_listp = bp;
+//     } else {
+//         NEXT_FREE(bp) = free_listp;
+//         PREV_FREE(free_listp) = bp;
+//         PREV_FREE(bp) = NULL;
+//         free_listp = bp;
+//     }
 
-    //printf("After insertFree\n");
-    //mm_checkheap(VERBOSE);
-}
-/* $end mminsertFree */
+//     //printf("After insertFree\n");
+//     //mm_checkheap(VERBOSE);
+// }
+// /* $end mminsertFree */
 
-/* removeFree - Removes a free block from the free list to be allocated */
-/* $begin mmremoveFree */
-static void removeFree(void *bp)
-{
-    // printf("\nBefore removeFree\n");
-    //mm_checkheap(VERBOSE);
-    /* no block in list */
-    if (free_listp == NULL) {
-        return;
-    }
-    /* only block in list */
-    else if (PREV_FREE(bp) == NULL && NEXT_FREE(bp) == NULL) {
-        free_listp = NULL;
-    }
-    /* first block in list */
-    else if (PREV_FREE(bp) == NULL) {
-        free_listp = NEXT_FREE(bp);
-        PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
-        NEXT_FREE(bp) = NULL;
-    } 
-    /* last block in list */
-    else if (NEXT_FREE(bp) == NULL) {
-        NEXT_FREE(PREV_FREE(bp)) = NEXT_FREE(bp);
-        PREV_FREE(bp) = NULL;
+// /* removeFree - Removes a free block from the free list to be allocated */
+// /* $begin mmremoveFree */
+// static void removeFree(void *bp)
+// {
+//     // printf("\nBefore removeFree\n");
+//     //mm_checkheap(VERBOSE);
+//     /* no block in list */
+//     if (free_listp == NULL) {
+//         return;
+//     }
+//      only block in list 
+//     else if (PREV_FREE(bp) == NULL && NEXT_FREE(bp) == NULL) {
+//         free_listp = NULL;
+//     }
+//     /* first block in list */
+//     else if (PREV_FREE(bp) == NULL) {
+//         free_listp = NEXT_FREE(bp);
+//         PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
+//         NEXT_FREE(bp) = NULL;
+//     } 
+//     /* last block in list */
+//     else if (NEXT_FREE(bp) == NULL) {
+//         NEXT_FREE(PREV_FREE(bp)) = NEXT_FREE(bp);
+//         PREV_FREE(bp) = NULL;
         
-    }
-    /* middle block in list */
-    else {
-        NEXT_FREE(PREV_FREE(bp)) = NEXT_FREE(bp);
-        PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
-        PREV_FREE(bp) = NULL;
-        NEXT_FREE(bp) = NULL;
-    }
+//     }
+//     /* middle block in list */
+//     else {
+//         NEXT_FREE(PREV_FREE(bp)) = NEXT_FREE(bp);
+//         PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
+//         PREV_FREE(bp) = NULL;
+//         NEXT_FREE(bp) = NULL;
+//     }
 
-    // printf("\nAfter removeFree\n");
-    ////mm_checkheap(VERBOSE);
-}
+//     // printf("\nAfter removeFree\n");
+//     ////mm_checkheap(VERBOSE);
+// }
 /* $end mmremoveFree */
 
 /* DEBUG HELPER FUNCTIONS */
