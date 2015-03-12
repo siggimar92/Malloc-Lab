@@ -114,7 +114,7 @@ team_t team = {
 // #define NEXT_FREE(bp)  ((char*) ((char*)(bp) + DSIZE))
 // #define PREV_FREE(bp)  ((char*) ((char*)(bp)))
 
-#define NEXT_FREE(bp)  (*(void **)(bp + DSIZE))
+#define NEXT_FREE(bp)  (*(void **)(bp + WSIZE))
 #define PREV_FREE(bp)  (*(void **)(bp))
 
 /* $end mallocmacros */
@@ -480,7 +480,7 @@ static void *coalesce(void *bp)
     /* Case 4 - Both blocks can be merged */
     else {
         removeFree(NEXT_BLKP(bp));
-        removeFree(NEXT_BLKP(bp));
+        removeFree(PREV_BLKP(bp));
         size += GET_SIZE(HDRP(PREV_BLKP(bp))) + 
             GET_SIZE(FTRP(NEXT_BLKP(bp)));
         PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
