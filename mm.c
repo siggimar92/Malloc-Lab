@@ -120,8 +120,8 @@ team_t team = {
 /* $end mallocmacros */
 
 /* Global variables */
-static char *heap_listp;  /* pointer to first block */
-static char *free_listp;  /* pointer to first free block */
+static char *heap_listp = 0;  /* pointer to first block */
+static char *free_listp = 0;  /* pointer to first free block */
 
 /* function prototypes for internal helper routines */
 static void *extend_heap(size_t words);
@@ -699,7 +699,8 @@ static void removeFree(void *bp)
     }
     if (PREV_FREE(bp) == NULL) {
         free_listp = NEXT_FREE(bp);
-        PREV_FREE(free_listp) = NULL;
+        // PREV_FREE(free_listp) = NULL;
+        PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
     } else {
         NEXT_FREE(PREV_FREE(bp)) = NEXT_FREE(bp);
         PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
