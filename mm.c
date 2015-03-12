@@ -728,6 +728,7 @@ static void print()
     char *bp;
     printf("heap_listp: %p \n", heap_listp);
     printf("free_listp: %p \n", free_listp);
+    int counter = 1;
     for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
 
         hsize = GET_SIZE(HDRP(bp));
@@ -740,9 +741,10 @@ static void print()
             return;
         }
 
-        printf("%p: header: [%d:%c] footer: [%d:%c]\n", bp, 
+        printf("%d: %p: header: [%d:%c] footer: [%d:%c]\n", counter, bp, 
                hsize, (halloc ? 'a' : 'f'), 
                fsize, (falloc ? 'a' : 'f')); 
+        counter++;
     }
 }
 
