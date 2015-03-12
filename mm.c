@@ -267,7 +267,7 @@ void *mm_realloc(void *ptr, size_t size)
     // mm_free(oldptr);
     // return newptr;
 
-    void *newPtr;
+    void *newPtr = ptr;
     size_t prevSize; /* Current size of the block to be changed */
     size_t asize;    /* Our calculated size of how big the block actually needs to be with header, footer, etc..  */
 
