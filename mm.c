@@ -154,8 +154,8 @@ void mm_checkheap(int verbose) ;
  */
 int mm_init(void)
 {
-    printf("Before init\n");
-    mm_checkheap(VERBOSE);
+    // printf("Before init\n");
+    // mm_checkheap(VERBOSE);
     /* create the initial empty heap */
     if ((heap_listp = mem_sbrk(4*WSIZE)) == NULL) {
         return -1;
