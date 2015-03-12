@@ -101,6 +101,7 @@ team_t team = {
 /* Read the size and allocated fields from address p */
 #define GET_SIZE(p)  (GET(p) & ~0x7)
 #define GET_ALLOC(p) (GET(p) & 0x1)
+#define GETSIZE(bp) ((*(int*) (bp-WSIZE)) & ~7)
 
 /* Given block ptr bp, compute address of its header and footer */
 #define HDRP(bp)       ((char *)(bp) - WSIZE)  
@@ -365,7 +366,7 @@ void *mm_realloc(void *ptr, size_t size)
         asize = DSIZE * ((size + (OVERHEAD) + (DSIZE-1)) / DSIZE);
     }
 
-    if(!GET_SIZE(NEXT_BLKP(ptr)))
+    if(!GETSIZE(NEXT_BLKP(ptr)))
     {
         size_t extendsize = MAX(asize, CHUNKSIZE);
         bp = extend_heap(extendsize/4);
@@ -407,7 +408,7 @@ void *mm_realloc(void *ptr, size_t size)
                 void *blk = NEXT_BLKP(ptr);
                 PUT(HDRP(blk), PACK(nsize,0));
                 PUT(FTRP(blk), PACK(nsize,0));
-                tree_root = mm_insert(tree_root, blk);
+                // tree_root = mm_insert(tree_root, blk);
                 
                 return ptr;
             }                                    
