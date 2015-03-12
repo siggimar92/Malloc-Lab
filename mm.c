@@ -286,12 +286,12 @@ void *mm_realloc(void *ptr, size_t size)
     // }
 
     if (ptr == NULL) {
-        printf("ptr == NULL\n");
+        //printf("ptr == NULL\n");
         return mm_malloc(size);
     }
 
     if (size <= 0) {
-        printf("size <= 0\n");
+        //printf("size <= 0\n");
         mm_free(ptr);  /* ATH */
         return 0;
     }
@@ -299,7 +299,7 @@ void *mm_realloc(void *ptr, size_t size)
     prevSize = GET_SIZE(HDRP(ptr));
 
     if (prevSize == asize) {
-        printf("prevSize == asize\n");
+        //printf("prevSize == asize\n");
         return ptr;
     }    
 
