@@ -760,14 +760,14 @@ void mm_checkheap(int verbose)
     char *fp = free_listp;
 
     if (verbose)
-        printf("Heap (%p):\n", heap_listp);
+        printf("\n \n### Heap list (%p):\n", heap_listp);
 
-    printf("heap_listp: %p \n", heap_listp);
+
+    //printf("heap_listp: %p \n", heap_listp);
     if ((GET_SIZE(HDRP(heap_listp)) != DSIZE) || !GET_ALLOC(HDRP(heap_listp)))
         printf("Bad prologue header\n");
     checkblock(heap_listp);
 
-    printf("free_listp: %p \n", free_listp);
     int counter = 1;
     for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
         if (verbose) 
@@ -777,6 +777,8 @@ void mm_checkheap(int verbose)
         counter++;
     }
 
+    if (verbose)
+        printf("\n \n #### Free List (%p):\n", free_listp);
     counter = 1;
     for (fp = free_listp; GET_ALLOC(HDRP(fp)) == 0; fp = NEXT_FREE(fp)) {
         if (verbose)
