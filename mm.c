@@ -132,7 +132,7 @@ static void printblock(void *bp);
 static void checkblock(void *bp);
 static void insertFree(void *bp);
 static void removeFree(void *bp);
-static void printfreelist();
+static void print();
 
 /* single word (4) or double word (8) alignment */
 #define ALIGNMENT 8
@@ -715,7 +715,7 @@ static void removeFree(void *bp)
 }
 /* $end mmremoveFree */
 
-static void printfreelist()
+static void print()
 {
     // printf("ALL list: ");
     // char *bp = heap_listp;
@@ -726,7 +726,8 @@ static void printfreelist()
     size_t hsize, halloc, fsize, falloc;
 
     char *bp;
-
+    printf("heap_listp: %p \n", heap_listp);
+    printf("free_listp: %p \n", free_listp);
     for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
 
         hsize = GET_SIZE(HDRP(bp));
