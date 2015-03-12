@@ -134,7 +134,8 @@ static void printblock(void *bp);
 static void checkblock(void *bp);
 static void insertFree(void *bp);
 static void removeFree(void *bp);
-static void print();
+// static void print();
+void mm_checkheap(int verbose) ;
 
 /* single word (4) or double word (8) alignment */
 #define ALIGNMENT 8
@@ -819,36 +820,36 @@ static void checkblock(void *bp)
         printf("Error: header does not match footer\n");
 }
 
-static void print()
-{
-    // printf("ALL list: ");
-    // char *bp = heap_listp;
-    // for (bp = heap_listp; bp != NULL; bp = (char *)*NEXT_BLKP(bp)) {
-    //     printf(" %lx -> ",(long)bp);
-    // }
-    // printf("END\n");
-    size_t hsize, halloc, fsize, falloc;
+// static void print()
+// {
+//     // printf("ALL list: ");
+//     // char *bp = heap_listp;
+//     // for (bp = heap_listp; bp != NULL; bp = (char *)*NEXT_BLKP(bp)) {
+//     //     printf(" %lx -> ",(long)bp);
+//     // }
+//     // printf("END\n");
+//     size_t hsize, halloc, fsize, falloc;
 
-    char *bp;
-    printf("heap_listp: %p \n", heap_listp);
-    printf("free_listp: %p \n", free_listp);
-    int counter = 1;
-    for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
+//     char *bp;
+//     printf("heap_listp: %p \n", heap_listp);
+//     printf("free_listp: %p \n", free_listp);
+//     int counter = 1;
+//     for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
 
-        hsize = GET_SIZE(HDRP(bp));
-        halloc = GET_ALLOC(HDRP(bp));  
-        fsize = GET_SIZE(FTRP(bp));
-        falloc = GET_ALLOC(FTRP(bp));  
+//         hsize = GET_SIZE(HDRP(bp));
+//         halloc = GET_ALLOC(HDRP(bp));  
+//         fsize = GET_SIZE(FTRP(bp));
+//         falloc = GET_ALLOC(FTRP(bp));  
         
-        if (hsize == 0) {
-            printf("%p: EOL\n", bp);
-            return;
-        }
+//         if (hsize == 0) {
+//             printf("%p: EOL\n", bp);
+//             return;
+//         }
  
-        printf("%d: %p: header: [%d:%c] footer: [%d:%c]\n", counter, bp, 
-               hsize, (halloc ? 'a' : 'f'), 
-               fsize, (falloc ? 'a' : 'f')); 
-        counter++;
-    }
-}
+//         printf("%d: %p: header: [%d:%c] footer: [%d:%c]\n", counter, bp, 
+//                hsize, (halloc ? 'a' : 'f'), 
+//                fsize, (falloc ? 'a' : 'f')); 
+//         counter++;
+//     }
+// }
 
