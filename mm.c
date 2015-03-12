@@ -524,7 +524,7 @@ static void *find_fit(size_t asize)
     // void *bp = heap_listp;
     // void *tmpPtr = bp; /* stores the ptr to the best fitting block so far */
     
-    // // heap_lisp = ptr to first bp
+    // // heap_listp = ptr to first bp
     // // GET_SIZE(HDRP(bp)) = size of block
 
     // if (asize <= 0)
@@ -717,11 +717,31 @@ static void removeFree(void *bp)
 
 static void printfreelist()
 {
-    printf("ALL list: ");
-    char *bp = heap_listp;
-    for (bp = heap_listp; bp != NULL; bp = (char *)*NEXT_BLKP(bp)) {
-        printf(" %lx -> ",(long)bp);
+    // printf("ALL list: ");
+    // char *bp = heap_listp;
+    // for (bp = heap_listp; bp != NULL; bp = (char *)*NEXT_BLKP(bp)) {
+    //     printf(" %lx -> ",(long)bp);
+    // }
+    // printf("END\n");
+    size_t hsize, halloc, fsize, falloc;
+
+    char *bp;
+
+    for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
+
+        hsize = GET_SIZE(HDRP(bp));
+        halloc = GET_ALLOC(HDRP(bp));  
+        fsize = GET_SIZE(FTRP(bp));
+        falloc = GET_ALLOC(FTRP(bp));  
+        
+        if (hsize == 0) {
+            printf("%p: EOL\n", bp);
+            return;
+        }
+
+        printf("%p: header: [%d:%c] footer: [%d:%c]\n", bp, 
+               hsize, (halloc ? 'a' : 'f'), 
+               fsize, (falloc ? 'a' : 'f')); 
     }
-    printf("END\n");
 }
 
