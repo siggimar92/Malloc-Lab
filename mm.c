@@ -1,43 +1,29 @@
 /*
- * mm-naive.c - The fastest, least memory-efficient malloc package.
- * 
- * In this naive approach, a block is allocated by simply incrementing
- * the brk pointer.  A block is pure payload. There are no headers or
- * footers.  Blocks are never coalesced or reused. Realloc is
- * implemented directly using mm_malloc and mm_free.
- *
- * 
- *
- *
- * ************** Code Description *****************
+ *************** Code Description *****************
  * 
  * Dynamic memory allocator.
- * We will use explicit list to keep track of the memory.
- * We will keep track of both free blocks and allocated blocks.
+ * This program uses explicit list to keep track of the memory.
+ * It keeps track of both free blocks and allocated blocks.
  * Each block will contain a header and a footer.
  *
- * The header will include informations about if the block is allocated 
+ * The header includes informations about if the block is allocated 
  * or not giving it the value 1 if it is allocated or 0 if not.
- * It will also include information about the size of the block.
+ * It also includes information about the size of the block.
  *
- * The footer will serve the same purpose as the header and store the same 
+ * The footer serves the same purpose as the header and store the same 
  * information at the end of the block. This information can be used to 
- * navigate the list backwards and will be used in the Coalesce function.
+ * navigate the list backwards and is used in the Coalesce function.
  *
  * The Coalesce function is used to merge two free blocks aligned side by 
  * side to keep track of the real free space instead of spliced sizes.
  * example:   [ 4 |  |  |  | 4 |  |  |  | 4 |  |  |  | 2 |  | 2 |  ]
- *              free         alloc        free         free   alloc
+ *             free         alloc        free         free   alloc
  * malloc(5)
  *            this cannot happen unless we call the coalesce function before 
  *            to merge the two free aligning blocks.
  *
- * We will use the First fit method to allocate the memory to best fit the 
- * external fragmentation. This will result in a bit slower memory allocation 
- * but better fragmented and therefore better utilised allocation. This method 
- * runs trough the entire heap each time a malloc is performed, and tries to 
- * find the free block of the size closest to the memory size that is being 
- * allocated.
+ * The program uses the First fit method to allocate the memory to the first 
+ * block it can fit in.
  *
  */
 
@@ -51,10 +37,6 @@
 #include "memlib.h"
 
 /*********************************************************
- * NOTE TO STUDENTS: Before you do anything else, please
- * provide your team information in below _AND_ in the
- * struct that follows.
- *
  * === User information ===
  * Group: The_lone_riders
  * User 1: sigurdura13
@@ -134,9 +116,9 @@ static void checkblock(void *bp);
 /* 
  * mm_init - initialize the malloc package.
  *
- * In this function we will initialize the heap at the beginning and 
- * initialize all global variables and call all necessary initializations, 
- * the function returns -1 if this fails. 
+ * This function initializes the heap at the beginning and 
+ * initializes all global variables and call all necessary 
+ * initializations, the function returns -1 if this fails. 
  */
 int mm_init(void)
 {
@@ -205,9 +187,9 @@ void *mm_malloc(size_t size)
 /*
  * mm_free - Freeing a block does nothing.
  *
- * In this function we will free/deallocate a chunk of 
+ * This function frees/deallocates a chunk of 
  * memmory pointed to by the ptr.
- * It will not return anything and will only work if
+ * It does not return anything and only works if
  * the ptr was returned using malloc or realloc and has
  * not been freed yet. 
  */
@@ -225,7 +207,7 @@ void mm_free(void *ptr)
  * when a program needs more memmory than it previosly requested
  * using malloc this function will be called.
  *
- * Here it is important to check if the added memmory is available
+ * This function checks if the added memmory is available
  * right behind the current location of the memmory and then the 
  * realloc will only return the pointer again and update the books 
  * to make sure it wont be overritten. Otherwise a expensive method
@@ -352,9 +334,9 @@ void *mm_realloc(void *ptr, size_t size)
 
 
 /* 
- *Coalesce will "merge" two or three blocks of memory that lie together
- * This is for the malloc to see how much memory really is available to
- * allocate new memory.
+ * The Coalesce function "merges" two or three blocks of memory that lie 
+ * together. This is for the malloc to see how much memory really is 
+ * available to allocate new memory.
  */
 static void *coalesce(void *bp) 
 {
@@ -362,24 +344,32 @@ static void *coalesce(void *bp)
     size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
     size_t size = GET_SIZE(HDRP(bp));
 
-    if (prev_alloc && next_alloc) {            /* Case 1 - both */
+    /* Case 1: if both are allocated (on the left and on the right next 
+     * to the current block)*/
+    if (prev_alloc && next_alloc) {
         return bp;
     }
 
-    else if (prev_alloc && !next_alloc) {      /* Case 2 */
+    /* Case 2: if the block on the left is allocated but the block on 
+     * the right is free */
+    else if (prev_alloc && !next_alloc) {
         size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
         PUT(HDRP(bp), PACK(size, 0));
         PUT(FTRP(bp), PACK(size,0));
     }
 
-    else if (!prev_alloc && next_alloc) {      /* Case 3 */
+    /* Case 3: if the block on the left is free but the block on the 
+     * right is allocated*/
+    else if (!prev_alloc && next_alloc) {
         size += GET_SIZE(HDRP(PREV_BLKP(bp)));
         PUT(FTRP(bp), PACK(size, 0));
         PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
         bp = PREV_BLKP(bp);
     }
 
-    else {                                     /* Case 4 */
+    /* Case 4: if both the block on the right and the block on the left 
+     * to the current block are free*/
+    else {
         size += GET_SIZE(HDRP(PREV_BLKP(bp))) + 
             GET_SIZE(FTRP(NEXT_BLKP(bp)));
         PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
