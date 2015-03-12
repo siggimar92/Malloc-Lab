@@ -277,8 +277,6 @@ void *mm_realloc(void *ptr, size_t size)
         asize = DSIZE * ((size + (OVERHEAD) + (DSIZE-1)) / DSIZE);
     }
 
-    /* error handling */
-    
     // if ((newPtr = mm_malloc(size)) == NULL) {
     //     printf("ERROR: mm_malloc failed in mm_realloc\n");
     //     exit(1);
@@ -301,7 +299,7 @@ void *mm_realloc(void *ptr, size_t size)
     /* decrese block size */
     if (asize < prevSize) {
         /* update header and footer and free the difference of the blocks */
-        size_t difference = prevSize - asize;
+        // size_t difference = prevSize - asize;
 
         // void *tmpPtr = /*(void*)*/FTRP(ptr);
 
@@ -309,19 +307,33 @@ void *mm_realloc(void *ptr, size_t size)
         PUT(FTRP(ptr), PACK(asize, 1));
         PUT(HDRP(NEXT_BLKP(ptr)), PACK(prevSize-size, 1));
         free(NEXT_BLKP(ptr));
-        // free(tmpPtr);
         
+        // free(tmpPtr);
         return ptr;
     }
 
+    /* Block size is increased */
     if (asize > prevSize) {
-        size_t difference = prevSize - asize;
+        size_t difference = prevSize + GET_SIZE(HDRP(NEXT_BLKP)) - asize;
 
-
-
-        // if (!GET_ALLOC(HDRP(NEXT_BLKP(ptr))) || !GET_SIZE(HDRP(NEXT_BLKP(ptr)))) {
-        //     difference = prevSize + GET_SIZE(HDRP(NEXT_BLKP(ptr))) - asize;
-        // }
+        /* Check if the next block is free and that it's big enough*/
+        if ((!GET_ALLOC(HDRP(NEXT_BLKP(ptr)))) && (GET_SIZE(HDRP(NEXT_BLKP(ptr))) >= difference)) { 
+            /* We increase the block to the next block and keep the remainder of it free */ 
+            PUT(HDRP(ptr), PACK(asize, 1));
+            PUT(HDRP(NEXT_BLKP(ptr)), PACK(difference, 0));
+            PUT(FTRP(NEXT_BLKP(ptr)), PACK(difference, 0));
+            PUT(FTRP(ptr), PACK(asize, 1));
+            return ptr;
+        } else {
+            newPtr = malloc(size);
+            // If malloc fails - return 0
+            if (!newPtr) {
+                return 0;
+            }
+            memcpy(newPtr, ptr, prevSize);
+            mm_free(ptr);
+        }
+        return newPtr;
     }
 
     /* increse block size */
