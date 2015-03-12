@@ -287,7 +287,8 @@ void *mm_realloc(void *ptr, size_t size)
     }
 
     if (size <= 0) {
-        return mm_free(ptr);  /* ATH */
+        mm_free(ptr);  /* ATH */
+        return 0;
     }
 
     prevSize = GET_SIZE(HDRP(ptr));
@@ -314,7 +315,7 @@ void *mm_realloc(void *ptr, size_t size)
 
     /* Block size is increased */
     if (asize > prevSize) {
-        size_t difference = prevSize + GET_SIZE(HDRP(NEXT_BLKP)) - asize;
+        size_t difference = (prevSize + GET_SIZE(HDRP(NEXT_BLKP(ptr))) - asize);
 
         /* Check if the next block is free and that it's big enough*/
         if ((!GET_ALLOC(HDRP(NEXT_BLKP(ptr)))) && (GET_SIZE(HDRP(NEXT_BLKP(ptr))) >= difference)) { 
@@ -328,13 +329,13 @@ void *mm_realloc(void *ptr, size_t size)
             newPtr = malloc(size);
             // If malloc fails - return 0
             if (!newPtr) {
-                return 0;
+                return NULL;
             }
             memcpy(newPtr, ptr, prevSize);
             mm_free(ptr);
         }
-        return newPtr;
     }
+    return newPtr;
 
     /* increse block size */
 
