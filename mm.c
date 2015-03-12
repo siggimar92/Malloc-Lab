@@ -130,6 +130,8 @@ static void *find_fit(size_t asize);
 static void *coalesce(void *bp);
 static void printblock(void *bp); 
 static void checkblock(void *bp);
+static void insertFree(void *bp);
+static void removeFree(void *bp);
 
 /* single word (4) or double word (8) alignment */
 #define ALIGNMENT 8
