@@ -365,7 +365,7 @@ void *mm_realloc(void *ptr, size_t size)
         asize = DSIZE * ((size + (OVERHEAD) + (DSIZE-1)) / DSIZE);
     }
 
-    if(!GETSIZE(NEXT_BLKP(ptr)))
+    if(!GET_SIZE(NEXT_BLKP(ptr)))
     {
         size_t extendsize = MAX(asize, CHUNKSIZE);
         bp = extend_heap(extendsize/4);
@@ -391,7 +391,7 @@ void *mm_realloc(void *ptr, size_t size)
         if(total >= asize)
         {
             size_t nsize = total - asize;
-            tree_root = mm_remove(tree_root,bp);
+            // tree_root = mm_remove(tree_root,bp);
             
             if(nsize < 16)
             {
