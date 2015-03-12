@@ -267,19 +267,75 @@ void *mm_realloc(void *ptr, size_t size)
     // mm_free(oldptr);
     // return newptr;
 
-    void *newp;
-    size_t copySize;
+    void *newPtr;
+    size_t prevSize; /* Current size of the block to be changed */
+    size_t asize;    /* Our calculated size of how big the block actually needs to be with header, footer, etc..  */
 
-    if ((newp = mm_malloc(size)) == NULL) {
-        printf("ERROR: mm_malloc failed in mm_realloc\n");
-        exit(1);
+    if (size <= DSIZE) {
+        asize = DSIZE + OVERHEAD;
+    } else {
+        asize = DSIZE * ((size + (OVERHEAD) + (DSIZE-1)) / DSIZE);
     }
-    copySize = GET_SIZE(HDRP(ptr));
-    if (size < copySize)
-        copySize = size;
-    memcpy(newp, ptr, copySize);
-    mm_free(ptr);
-    return newp;
+
+    /* error handling */
+    
+    // if ((newPtr = mm_malloc(size)) == NULL) {
+    //     printf("ERROR: mm_malloc failed in mm_realloc\n");
+    //     exit(1);
+    // }
+
+    if (ptr == NULL) {
+        return mm_malloc(size);
+    }
+
+    if (size <= 0) {
+        return mm_free(ptr);  /* ATH */
+    }
+
+    prevSize = GET_SIZE(HDRP(ptr));
+
+    if (prevSize == asize) {
+        return ptr;
+    }    
+
+    /* decrese block size */
+    if (asize < prevSize) {
+        /* update header and footer and free the difference of the blocks */
+        size_t difference = prevSize - asize;
+
+        // void *tmpPtr = /*(void*)*/FTRP(ptr);
+
+        PUT(HDRP(ptr), PACK(asize, 1));
+        PUT(FTRP(ptr), PACK(asize, 1));
+        PUT(HDRP(NEXT_BLKP(ptr)), PACK(prevSize-size, 1));
+        free(NEXT_BLKP(ptr));
+        // free(tmpPtr);
+        
+        return ptr;
+    }
+
+    if (asize > prevSize) {
+        size_t difference = prevSize - asize;
+
+
+
+        // if (!GET_ALLOC(HDRP(NEXT_BLKP(ptr))) || !GET_SIZE(HDRP(NEXT_BLKP(ptr)))) {
+        //     difference = prevSize + GET_SIZE(HDRP(NEXT_BLKP(ptr))) - asize;
+        // }
+    }
+
+    /* increse block size */
+
+    
+    // newptr = mm_malloc(size);
+    // if (size < prevSize) {
+    //     prevSize = size;
+    // }
+
+    // memcpy(newPtr, ptr, prevSize);
+    // mm_free(ptr);
+
+    // return newPtr;
 }
 
 
