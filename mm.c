@@ -128,7 +128,7 @@ static char *free_listp = 0;  /* pointer to first free block */
 /* function prototypes for internal helper routines */
 static void *extend_heap(size_t words);
 static void place(void *bp, size_t asize);
-static void *find_fit(size_t asize);
+static void *find_fit(size_t asize);8
 static void *coalesce(void *bp);
 static void printblock(void *bp); 
 static void checkblock(void *bp);
@@ -249,6 +249,11 @@ void mm_free(void *ptr)
 {
     printf("\nBefore free\n");
     mm_checkheap(VERBOSE);
+
+    if (!ptr) {
+        return;
+    }
+
     size_t size = GET_SIZE(HDRP(ptr));
 
     PUT(HDRP(ptr), PACK(size, 0));
@@ -493,7 +498,8 @@ static void *coalesce(void *bp)
     printf("\nBefore Coalesce\n");
     mm_checkheap(VERBOSE);
 
-    size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
+    //size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
+    size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp))) || PREV_BLKP(bp) == bp;
     size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
     size_t size = GET_SIZE(HDRP(bp));
 
@@ -504,30 +510,35 @@ static void *coalesce(void *bp)
 
     /* Case 2 - next block to the right can be merged */
     else if (prev_alloc && !next_alloc) {
-        removeFree(NEXT_BLKP(bp));
         size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
+        removeFree(NEXT_BLKP(bp));
         PUT(HDRP(bp), PACK(size, 0));
         PUT(FTRP(bp), PACK(size,0));
     }
 
     /* Case 3 - previous block to the left can be merged */
     else if (!prev_alloc && next_alloc) {
-        removeFree(PREV_BLKP(bp));
         size += GET_SIZE(HDRP(PREV_BLKP(bp)));
-        PUT(FTRP(bp), PACK(size, 0));
+        removeFree(PREV_BLKP(bp));
+        //PUT(FTRP(bp), PACK(size, 0));
+        PUT(FTRP(PREV_BLKP(bp)), PACK(size, 0));
         PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
         bp = PREV_BLKP(bp);
     }
 
     /* Case 4 - Both blocks can be merged */
     else {
+        size += GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(FTRP(NEXT_BLKP(bp)));
+
         removeFree(NEXT_BLKP(bp));
         removeFree(PREV_BLKP(bp));
-        size += GET_SIZE(HDRP(PREV_BLKP(bp))) + 
-            GET_SIZE(FTRP(NEXT_BLKP(bp)));
-        PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
-        PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
+
+        //PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
+        //PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
+        // bp = PREV_BLKP(bp);
         bp = PREV_BLKP(bp);
+        PUT(HDRP(bp), PACK(size, 0));
+        PUT(FTRP(bp), PACK(size, 0));
     }
 
     printf("After Coalesce\n");
