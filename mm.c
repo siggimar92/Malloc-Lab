@@ -760,7 +760,7 @@ void mm_checkheap(int verbose)
     char *fp = free_listp;
 
     if (verbose)
-        printf("\n \n### Heap list (%p):\n", heap_listp);
+        printf("\n### Heap list (%p):\n", heap_listp);
 
 
     //printf("heap_listp: %p \n", heap_listp);
@@ -778,7 +778,7 @@ void mm_checkheap(int verbose)
     }
 
     if (verbose)
-        printf("\n \n #### Free List (%p):\n", free_listp);
+        printf("#### Free List (%p):\n", free_listp);
     counter = 1;
     for (fp = free_listp; GET_ALLOC(HDRP(fp)) == 0; fp = NEXT_FREE(fp)) {
         if (verbose)
