@@ -133,9 +133,9 @@ static void mm_checkheap(int verbose);
  */
 int mm_init(void)
 {
-    if (VERBOSE == 2) {
-        printf("### Called mm_init ###\n");
-    }
+    // if (VERBOSE == 2) {
+    //     printf("### Called mm_init ###\n");
+    // }
     /* create the initial empty heap */
     if ((heap_listp = mem_sbrk(4*WSIZE)) == NULL) {
         return -1;
@@ -170,12 +170,12 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-    if (VERBOSE == 2) {
-        printf("### Called mm_malloc ###\n");
-        mm_checkheap(VERBOSE);
-    } else if (VERBOSE == 1) {
-        mm_checkheap(VERBOSE);
-    }
+    // if (VERBOSE == 2) {
+    //     printf("### Called mm_malloc ###\n");
+    //     mm_checkheap(VERBOSE);
+    // } else if (VERBOSE == 1) {
+    //     mm_checkheap(VERBOSE);
+    // }
     size_t asize;      /* adjusted block size */
     size_t extendsize; /* amount to extend heap if no fit */
     char *bp;
@@ -215,12 +215,12 @@ void *mm_malloc(size_t size)
  */
 void mm_free(void *ptr)
 {
-    if (VERBOSE == 2) {
-        printf("### Called mm_free ###\n");
-        mm_checkheap(VERBOSE);
-    } else if (VERBOSE == 1) {
-        mm_checkheap(VERBOSE);
-    }
+    // if (VERBOSE == 2) {
+    //     printf("### Called mm_free ###\n");
+    //     mm_checkheap(VERBOSE);
+    // } else if (VERBOSE == 1) {
+    //     mm_checkheap(VERBOSE);
+    // }
 
     size_t size = GET_SIZE(HDRP(ptr));
 
@@ -249,12 +249,12 @@ void mm_free(void *ptr)
  */
 void *mm_realloc(void *ptr, size_t size)
 {
-   if (VERBOSE == 2) {
-        printf("### Called mm_realloc ###\n");
-        mm_checkheap(VERBOSE);
-    } else if (VERBOSE == 1) {
-        mm_checkheap(VERBOSE);
-    }
+   // if (VERBOSE == 2) {
+   //      printf("### Called mm_realloc ###\n");
+   //      mm_checkheap(VERBOSE);
+   //  } else if (VERBOSE == 1) {
+   //      mm_checkheap(VERBOSE);
+   //  }
     void *newPtr = ptr;
     size_t prevSize; /* Current size of the block to be changed */
     size_t asize;    /* Our calculated size of how big the block actually needs to be with header, footer, etc..  */
@@ -373,12 +373,12 @@ void *mm_realloc(void *ptr, size_t size)
  */
 static void *coalesce(void *bp) 
 {
-    if (VERBOSE == 2) {
-        printf("### Called coalesce ###\n");
-        mm_checkheap(VERBOSE);
-    } else if (VERBOSE == 1) {
-        mm_checkheap(VERBOSE);
-    }
+    // if (VERBOSE == 2) {
+    //     printf("### Called coalesce ###\n");
+    //     mm_checkheap(VERBOSE);
+    // } else if (VERBOSE == 1) {
+    //     mm_checkheap(VERBOSE);
+    // }
     size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
     size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
     size_t size = GET_SIZE(HDRP(bp));
@@ -425,12 +425,12 @@ static void *coalesce(void *bp)
 static void *find_fit(size_t asize)
 {
     /* first fit search */
-    if (VERBOSE == 2) {
-        printf("### called find_fit ###");
-        mm_checkheap(VERBOSE);
-    } else if (VERBOSE == 1) {
-        mm_checkheap(VERBOSE);
-    }
+    // if (VERBOSE == 2) {
+    //     printf("### called find_fit ###");
+    //     mm_checkheap(VERBOSE);
+    // } else if (VERBOSE == 1) {
+    //     mm_checkheap(VERBOSE);
+    // }
     void *bp;
 
     for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
@@ -447,12 +447,12 @@ static void *find_fit(size_t asize)
 /* $begin mmextendheap */
 static void *extend_heap(size_t words) 
 {
-    if (VERBOSE == 2) {
-        printf("### Called extend_heap ###\n");
-        mm_checkheap(VERBOSE);
-    } else if (VERBOSE == 1) {
-        mm_checkheap(VERBOSE);
-    }
+    // if (VERBOSE == 2) {
+    //     printf("### Called extend_heap ###\n");
+    //     mm_checkheap(VERBOSE);
+    // } else if (VERBOSE == 1) {
+    //     mm_checkheap(VERBOSE);
+    // }
     char *bp;
     size_t size;
         
@@ -480,12 +480,12 @@ static void *extend_heap(size_t words)
 static void place(void *bp, size_t asize)
 /* $end mmplace-proto */
 {
-    if (VERBOSE == 2) {
-        printf("### Called place ###\n");
-        mm_checkheap(VERBOSE);
-    } else if (VERBOSE == 1) {
-        mm_checkheap(VERBOSE);
-    }
+    // if (VERBOSE == 2) {
+    //     printf("### Called place ###\n");
+    //     mm_checkheap(VERBOSE);
+    // } else if (VERBOSE == 1) {
+    //     mm_checkheap(VERBOSE);
+    // }
     size_t csize = GET_SIZE(HDRP(bp));   
 
     if ((csize - asize) >= (DSIZE + OVERHEAD)) { 
