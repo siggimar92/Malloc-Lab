@@ -539,35 +539,35 @@ static void *find_fit(size_t asize)
 
 
     /* first fit search */
-    // void *bp;
+    void *bp;
 
-    // for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
-    //     if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) {
-    //         return bp;
-    //     }
-    // }
-    // return NULL; /* no fit */
-
-    void *bp = heap_listp;
-    void *tmpPtr = NULL; /* stores the ptr to the best fitting block so far */
-
-    if (asize <= 0) {
-        return NULL;
-    }
-
-    /* go through free list and see if we find a free block where the new block fits */
-    for (; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
+    for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
         if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) {
-            if (asize == GET_SIZE(HDRP(bp))) {
-                return bp;
-            }
-            else {
-                tmpPtr = bp;
-            }
+            return bp;
         }
     }
+    return NULL; /* no fit */
 
-    return tmpPtr;
+    // void *bp = heap_listp;
+    // void *tmpPtr = NULL; /* stores the ptr to the best fitting block so far */
+
+    // if (asize <= 0) {
+    //     return NULL;
+    // }
+
+    // /* go through free list and see if we find a free block where the new block fits */
+    // for (; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
+    //     if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) {
+    //         if (asize == GET_SIZE(HDRP(bp))) {
+    //             return bp;
+    //         }
+    //         else {
+    //             tmpPtr = bp;
+    //         }
+    //     }
+    // }
+
+    // return tmpPtr;
 }
 
 static void printblock(void *bp) 
