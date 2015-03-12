@@ -117,7 +117,7 @@ team_t team = {
 #define NEXT_FREE(bp)  (*(void **)(bp + WSIZE))
 #define PREV_FREE(bp)  (*(void **)(bp))
 
-#define VERBOSE 1
+#define VERBOSE 0
 
 /* $end mallocmacros */
 
@@ -756,43 +756,46 @@ static void removeFree(void *bp)
 /* DEBUG HELPER FUNCTIONS */
 void mm_checkheap(int verbose) 
 {
-    char *bp = heap_listp;
-    char *fp = free_listp;
-
     if (verbose)
-        printf("\n### Heap list (%p):\n", heap_listp);
+    {
+        char *bp = heap_listp;
+        char *fp = free_listp;
 
-
-    //printf("heap_listp: %p \n", heap_listp);
-    if ((GET_SIZE(HDRP(heap_listp)) != DSIZE) || !GET_ALLOC(HDRP(heap_listp)))
-        printf("Bad prologue header\n");
-    checkblock(heap_listp);
-
-    int counter = 1;
-    for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
-        if (verbose) 
-            printf("%d: ", counter);
-            printblock(bp);
-        checkblock(bp);
-        counter++;
-    }
-
-    if (verbose)
-        printf("#### Free List (%p):\n", free_listp);
-    counter = 1;
-    for (fp = free_listp; GET_ALLOC(HDRP(fp)) == 0; fp = NEXT_FREE(fp)) {
         if (verbose)
-            printf("%d: ", counter);
-            printblock(fp);
-        checkblock(fp);
-        counter++;
-    }
+            printf("\n### Heap list (%p):\n", heap_listp);
 
-     
-    if (verbose)
-        printblock(bp);
-    if ((GET_SIZE(HDRP(bp)) != 0) || !(GET_ALLOC(HDRP(bp))))
-        printf("Bad epilogue header\n");
+
+        //printf("heap_listp: %p \n", heap_listp);
+        if ((GET_SIZE(HDRP(heap_listp)) != DSIZE) || !GET_ALLOC(HDRP(heap_listp)))
+            printf("Bad prologue header\n");
+        checkblock(heap_listp);
+
+        int counter = 1;
+        for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
+            if (verbose) 
+                printf("%d: ", counter);
+                printblock(bp);
+            checkblock(bp);
+            counter++;
+        }
+
+        if (verbose)
+            printf("#### Free List (%p):\n", free_listp);
+        counter = 1;
+        for (fp = free_listp; GET_ALLOC(HDRP(fp)) == 0; fp = NEXT_FREE(fp)) {
+            if (verbose)
+                printf("%d: ", counter);
+                printblock(fp);
+            checkblock(fp);
+            counter++;
+        }
+
+         
+        if (verbose)
+            printblock(bp);
+        if ((GET_SIZE(HDRP(bp)) != 0) || !(GET_ALLOC(HDRP(bp))))
+            printf("Bad epilogue header\n");
+    }
 }
 
 static void printblock(void *bp) 
