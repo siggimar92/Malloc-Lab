@@ -366,7 +366,7 @@ void *mm_realloc(void *ptr, size_t size)
     } else {
         asize = DSIZE * ((size + (OVERHEAD) + (DSIZE-1)) / DSIZE);
     }
-    
+
     /* If size <= 0 then this is just free, and we return NULL. */
     if(size <= 0) {
         free(ptr);
@@ -393,7 +393,7 @@ void *mm_realloc(void *ptr, size_t size)
 
         /* If a new block couldn't fit in the remaining space, 
          * return the pointer */
-        if(oldsize - size <= MINIMUM)
+        if(oldsize - size <= OVERHEAD)
             return ptr;
         PUT(HDRP(ptr), PACK(size, 1));
         PUT(FTRP(ptr), PACK(size, 1));
