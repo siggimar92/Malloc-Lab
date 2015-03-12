@@ -133,14 +133,14 @@ static void checkblock(void *bp);
 
 /* 
  * mm_init - initialize the malloc package.
+ *
+ * In this function we will initialize the heap at the beginning and 
+ * initialize all global variables and call all necessary initializations, 
+ * the function returns -1 if this fails. 
  */
 int mm_init(void)
 {
-    /* in this function we will initialize the heap at the beginning and 
-     * initialize all global variables and call all necessary initializations, 
-     * the function returns -1 if this fails. 
-     */
-      /* create the initial empty heap */
+    /* create the initial empty heap */
     if ((heap_listp = mem_sbrk(4*WSIZE)) == NULL) {
         return -1;
     }
@@ -161,20 +161,19 @@ int mm_init(void)
 
 /* 
  * mm_malloc - Allocate a block by incrementing the brk pointer.
- *     Always allocate a block whose size is a multiple of the alignment.
+ * Always allocate a block whose size is a multiple of the alignment.
+ *
+ * This function is the main function behind this project.
+ * when a program calls malloc it accepts size parameter 
+ * and will return a pointer to a block in the heap of 
+ * at least size, size. 
+ * will not override or overlap any exsisting chunk of 
+ * allocated memmory.
+ * if no free space is available on the heap this 
+ * function will return null.
  */
 void *mm_malloc(size_t size)
 {
-    /* this function is the main function behind this project.
-     * when a program calls malloc it accepts size parameter 
-     * and will return a pointer to a block in the heap of 
-     * at least size, size. 
-     * will not override or overlap any exsisting chunk of 
-     * allocated memmory.
-     * if no free space is available on the heap this 
-     * function will return null.
-     */
-
     // from old file:
 
     // int newsize = ALIGN(size + SIZE_T_SIZE);
@@ -216,16 +215,15 @@ void *mm_malloc(size_t size)
 
 /*
  * mm_free - Freeing a block does nothing.
+ *
+ * In this function we will free/deallocate a chunk of 
+ * memmory pointed to by the ptr.
+ * It will not return anything and will only work if
+ * the ptr was returned using malloc or realloc and has
+ * not been freed yet. 
  */
 void mm_free(void *ptr)
 {
-    /* in this function we will free/deallocate a chunk of 
-     * memmory pointed to by the ptr.
-     * It will not return anything and will only work if
-     * the ptr was returned using malloc or realloc and has
-     * not been freed yet. 
-     */
-
     size_t size = GET_SIZE(HDRP(ptr));
 
     PUT(HDRP(ptr), PACK(size, 0));
@@ -235,25 +233,24 @@ void mm_free(void *ptr)
 
 /*
  * mm_realloc - Implemented simply in terms of mm_malloc and mm_free
+ * when a program needs more memmory than it previosly requested
+ * using malloc this function will be called.
+ *
+ * Here it is important to check if the added memmory is available
+ * right behind the current location of the memmory and then the 
+ * realloc will only return the pointer again and update the books 
+ * to make sure it wont be overritten. Otherwise a expensive method
+ * to copy the current memmory blocks to a new location with added 
+ * memmory will be called.
+ * If possible fit the memmory in gaps in current heap space, 
+ * otherwise the heap needs to be expanded.
+ * 
+ * If ptr = null it is equalent to calling malloc
+ * 
+ * If size = 0 it is equalent to calling free
  */
 void *mm_realloc(void *ptr, size_t size)
 {
-    /* when a program needs more memmory than it previosly requested
-     * using malloc this function will be called.
-     * Here it is important to check if the added memmory is available
-     * right behind the current location of the memmory and then the 
-     * realloc will only return the pointer again and update the books 
-     * to make sure it wont be overritten. Otherwise a expensive method
-     * to copy the current memmory blocks to a new location with added 
-     * memmory will be called.
-     * If possible fit the memmory in gaps in current heap space, 
-     * otherwise the heap needs to be expanded.
-     * 
-     * If ptr = null it is equalent to calling malloc
-     * 
-     * If size = 0 it is equalent to calling free
-     */
-
     // from old file:
 
     // void *oldptr = ptr;
@@ -286,14 +283,18 @@ void *mm_realloc(void *ptr, size_t size)
 }
 
 
-/* Need to fix this function... just a copy paste from the mm-first file given in the project */
+/* 
+ *Coalesce will "merge" two or three blocks of memory that lie together
+ * This is for the malloc to see how much memory really is available to
+ * allocate new memory.
+ */
 static void *coalesce(void *bp) 
 {
     size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
     size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
     size_t size = GET_SIZE(HDRP(bp));
 
-    if (prev_alloc && next_alloc) {            /* Case 1 */
+    if (prev_alloc && next_alloc) {            /* Case 1 - both */
         return bp;
     }
 
