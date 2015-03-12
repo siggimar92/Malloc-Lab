@@ -96,7 +96,11 @@ team_t team = {
 
 /* Read and write a word at address p */
 #define GET(p)       (*(size_t *)(p))
-#define PUT(p, val)  (*(size_t *)(p) = (val))  
+#define PUT(p, val)  (*(size_t *)(p) = (val))
+
+/* Read and write a word in adress p - for next and previos free pointers in a free block */
+#define GET_POINTER(p)      (*(size_t *)(p))
+#define PUT_POINTER(p, val) (*(size_t *)(p) = (size_t)(val))  
 
 /* Read the size and allocated fields from address p */
 #define GET_SIZE(p)  (GET(p) & ~0x7)
@@ -114,8 +118,11 @@ team_t team = {
 // #define NEXT_FREE(bp)  ((char*) ((char*)(bp) + DSIZE))
 // #define PREV_FREE(bp)  ((char*) ((char*)(bp)))
 
-#define NEXT_FREE(bp)  (*(void **)(bp + WSIZE))
-#define PREV_FREE(bp)  (*(void **)(bp))
+// #define NEXT_FREE(bp)  (*(void **)(bp + WSIZE))
+// #define PREV_FREE(bp)  (*(void **)(bp))
+
+#define NEXT_FREE(bp)   (HDRP(bp) + DSIZE)
+#define PREV_FREE(bp)   (HDRP(bp) + WSIZE)
 
 #define VERBOSE 0
 
@@ -172,6 +179,11 @@ int mm_init(void)
     if (extend_heap(CHUNKSIZE/WSIZE) == NULL) {
         return -1;
     }
+
+    PUT_POINTER(NEXT_FREE(free_listp, NULL));
+    PUT_POINTER(PREV_FREE(free_listp, NULL));
+
+
     // printf("after init\n");
     //mm_checkheap(VERBOSE);
 
@@ -594,14 +606,23 @@ static void *find_fit(size_t asize)
 
 
     /* first fit search in free_listp*/
+    // void *bp;
+
+    // for (bp = free_listp; GET_ALLOC(HDRP(bp)) == 0; bp = NEXT_FREE(bp)) {
+    //     if (asize <= (size_t)GET_SIZE(HDRP(bp))) {
+    //         return bp;
+    //     }
+    // }
+    // return NULL; /* no fit */
+
     void *bp;
 
-    for (bp = free_listp; GET_ALLOC(HDRP(bp)) == 0; bp = NEXT_FREE(bp)) {
-        if (asize <= (size_t)GET_SIZE(HDRP(bp))) {
+    for(bp = free_listp; GET_POINTER(NEXT_FREE(bp)) != 0; bp = (void*)(GET_POINTER(NEXT_FREE(bp)))) {
+        if (asize <= GET_SIZE(HDRP(bp))) {
             return bp;
         }
     }
-    return NULL; /* no fit */
+    return NULL;
 
 
     // /* first fit search */
