@@ -128,7 +128,7 @@ static char *free_listp = 0;  /* pointer to first free block */
 /* function prototypes for internal helper routines */
 static void *extend_heap(size_t words);
 static void place(void *bp, size_t asize);
-static void *find_fit(size_t asize);8
+static void *find_fit(size_t asize);
 static void *coalesce(void *bp);
 static void printblock(void *bp); 
 static void checkblock(void *bp);
