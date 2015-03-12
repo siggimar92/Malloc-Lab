@@ -29,7 +29,7 @@
  * example:   [ 4 |  |  |  | 4 |  |  |  | 4 |  |  |  | 2 |  | 2 |  ]
  *              free         alloc        free         free   alloc
  * malloc(5)
- *            this cannot happen unless we call the coalesce function before 
+ *            this cannot happen unless we call the coalesce function \nbefore 
  *            to merge the two free aligning blocks.
  *
  * We will use the Best fit method to allocate the memory to best fit the 
@@ -51,7 +51,7 @@
 #include "memlib.h"
 
 /*********************************************************
- * NOTE TO STUDENTS: Before you do anything else, please
+ * NOTE TO STUDENTS: \nBefore you do anything else, please
  * provide your team information in below _AND_ in the
  * struct that follows.
  *
@@ -203,7 +203,7 @@ void *mm_malloc(size_t size)
     //     *(size_t *)p = size;
     //     return (void *)((char *)p + SIZE_T_SIZE);
     // }
-    printf("Before malloc\n");
+    printf("\nBefore malloc\n");
     mm_checkheap(VERBOSE);
     size_t asize;      /* adjusted block size */
     size_t extendsize; /* amount to extend heap if no fit */
@@ -247,7 +247,7 @@ void *mm_malloc(size_t size)
  */
 void mm_free(void *ptr)
 {
-    printf("Before free\n");
+    printf("\nBefore free\n");
     mm_checkheap(VERBOSE);
     size_t size = GET_SIZE(HDRP(ptr));
 
@@ -296,7 +296,7 @@ void *mm_realloc(void *ptr, size_t size)
     // mm_free(oldptr);
     // return newptr;
 
-    printf("Before realloc\n");
+    printf("\nBefore realloc\n");
     mm_checkheap(VERBOSE);
 
     void *newPtr = ptr;
@@ -490,7 +490,7 @@ void *mm_realloc(void *ptr, size_t size)
  */
 static void *coalesce(void *bp) 
 {
-    printf("Before Coalesce\n");
+    printf("\nBefore Coalesce\n");
     mm_checkheap(VERBOSE);
 
     size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
@@ -633,7 +633,7 @@ static void *find_fit(size_t asize)
 static void *extend_heap(size_t words) 
 {
 
-    printf("Before extend_heap\n");
+    printf("\nBefore extend_heap\n");
     mm_checkheap(VERBOSE);
 
     char *bp;
@@ -666,7 +666,7 @@ static void *extend_heap(size_t words)
 static void place(void *bp, size_t asize)
 /* $end mmplace-proto */
 {
-    printf("Before place\n");
+    printf("\nBefore place\n");
     mm_checkheap(VERBOSE);
 
     size_t csize = GET_SIZE(HDRP(bp));   
@@ -695,7 +695,7 @@ static void place(void *bp, size_t asize)
 /* $begin mminsertFree */
 static void insertFree(void *bp)
 {
-    printf("Before insertFree\n");
+    printf("\nBefore insertFree\n");
     mm_checkheap(VERBOSE);
 
     if (free_listp == NULL) {
@@ -718,7 +718,7 @@ static void insertFree(void *bp)
 /* $begin mmremoveFree */
 static void removeFree(void *bp)
 {
-    printf("Before removeFree\n");
+    printf("\nBefore removeFree\n");
     mm_checkheap(VERBOSE);
     /* no block in list */
     if (free_listp == NULL) {
@@ -748,7 +748,7 @@ static void removeFree(void *bp)
         NEXT_FREE(bp) = NULL;
     }
 
-    printf("After removeFree\n");
+    printf("\nAfter removeFree\n");
     mm_checkheap(VERBOSE);
 }
 /* $end mmremoveFree */
