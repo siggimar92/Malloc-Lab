@@ -67,11 +67,11 @@ team_t team = {
     /* Group name */
     "the_lone_riders",
     /* First member's full name */
-    "Sigurður Már Atlason",
+    "Sigurdur Mar Atlason",
     /* First member's email address */
     "sigurdura13@ru.is",
     /* Second member's full name (leave blank if none) */
-    "Hafþór Snær Þórsson",
+    "Hafthor Snaer Thorsson",
     /* Second member's email address (leave blank if none) */
     "hafthort12@ru.is",
     /* Leave blank */
