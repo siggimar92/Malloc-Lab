@@ -663,9 +663,9 @@ static void place(void *bp, size_t asize)
     size_t csize = GET_SIZE(HDRP(bp));   
 
     if ((csize - asize) >= (DSIZE + OVERHEAD)) { 
+        removeFree(bp);
         PUT(HDRP(bp), PACK(asize, 1));
         PUT(FTRP(bp), PACK(asize, 1));
-        removeFree(bp);
         bp = NEXT_BLKP(bp);
         PUT(HDRP(bp), PACK(csize-asize, 0));
         PUT(FTRP(bp), PACK(csize-asize, 0));
@@ -684,8 +684,8 @@ static void place(void *bp, size_t asize)
 static void insertFree(void *bp)
 {
     NEXT_FREE(bp) = free_listp;
-    PREV_FREE(bp) = NULL;
     PREV_FREE(free_listp) = bp;
+    PREV_FREE(bp) = NULL;
     free_listp = bp;
 }
 /* $end mminsertFree */
