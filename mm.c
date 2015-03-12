@@ -119,8 +119,8 @@ team_t team = {
 
 // #define NEXT_FREE(bp)  ((char*)(bp) + WSIZE)
 // #define PREV_FREE(bp)  ((char*)(bp))
-#define NEXT_FREE(bp) ((void *)* (bp+WSIZE))
-#define PREV_FREE(bp) ((void *)* (bp))
+#define NEXT_FREE(bp) ((void *)(bp+WSIZE))
+#define PREV_FREE(bp) ((void *)(bp))
 
 /* $end mallocmacros */
 
