@@ -180,8 +180,8 @@ int mm_init(void)
         return -1;
     }
 
-    PUT_POINTER(NEXT_FREE(free_listp, NULL));
-    PUT_POINTER(PREV_FREE(free_listp, NULL));
+    PUT_POINTER(NEXT_FREE(free_listp), NULL);
+    PUT_POINTER(PREV_FREE(free_listp), NULL);
 
 
     // printf("after init\n");
