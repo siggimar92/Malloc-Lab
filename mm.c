@@ -100,7 +100,7 @@ team_t team = {
 #define NEXT_FREE(bp)  (HDRP(bp) + DSIZE)
 #define PREV_FREE(bp)  (HRDP(bp) + WSIZE)
 
-#define VERBOSE 1
+#define VERBOSE 2
 /* $end mallocmacros */
 
 /* Global variables */
@@ -135,9 +135,6 @@ int mm_init(void)
 {
     if (VERBOSE == 2) {
         printf("### Called mm_init ###\n");
-        mm_checkheap(VERBOSE);
-    } else if (VERBOSE == 1) {
-        mm_checkheap(VERBOSE);
     }
     /* create the initial empty heap */
     if ((heap_listp = mem_sbrk(4*WSIZE)) == NULL) {
