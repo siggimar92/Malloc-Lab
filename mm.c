@@ -100,7 +100,7 @@ team_t team = {
 #define NEXT_FREE(bp)  (HDRP(bp) + DSIZE)
 #define PREV_FREE(bp)  (HRDP(bp) + WSIZE)
 
-#define VERBOSE 2
+#define VERBOSE 0
 /* $end mallocmacros */
 
 /* Global variables */
