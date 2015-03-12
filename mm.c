@@ -298,15 +298,18 @@ void *mm_realloc(void *ptr, size_t size)
     }    
 
     /* decrese block size */
-    if (asize < prevSize) {
+    if (asize <= prevSize) {
         /* update header and footer and free the difference of the blocks */
         // size_t difference = prevSize - asize;
 
         // void *tmpPtr = /*(void*)*/FTRP(ptr);
+        if (prevSize - asize <= OVERHEAD) {
+            return ptr;
+        }
 
         PUT(HDRP(ptr), PACK(asize, 1));
         PUT(FTRP(ptr), PACK(asize, 1));
-        PUT(HDRP(NEXT_BLKP(ptr)), PACK(prevSize-size, 1));
+        PUT(HDRP(NEXT_BLKP(ptr)), PACK(prevSize-asize, 1));
         free(NEXT_BLKP(ptr));
         
         // free(tmpPtr);
