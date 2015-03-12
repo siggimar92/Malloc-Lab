@@ -267,6 +267,9 @@ void *mm_realloc(void *ptr, size_t size)
     // mm_free(oldptr);
     // return newptr;
 
+    // printf("\nBefore realloc\n");
+    //mm_checkheap(VERBOSE);
+
     void *newPtr = ptr;
     size_t prevSize; /* Current size of the block to be changed */
     size_t asize;    /* Our calculated size of how big the block actually needs to be with header, footer, etc..  */
@@ -283,10 +286,12 @@ void *mm_realloc(void *ptr, size_t size)
     // }
 
     if (ptr == NULL) {
+        printf("ptr == NULL\n");
         return mm_malloc(size);
     }
 
     if (size <= 0) {
+        printf("size <= 0\n");
         mm_free(ptr);  /* ATH */
         return 0;
     }
@@ -294,57 +299,148 @@ void *mm_realloc(void *ptr, size_t size)
     prevSize = GET_SIZE(HDRP(ptr));
 
     if (prevSize == asize) {
+        printf("prevSize == asize\n");
         return ptr;
     }    
 
-    /* decrese block size */
-    if (asize <= prevSize) {
-        /* update header and footer and free the difference of the blocks */
-        // size_t difference = prevSize - asize;
+    /* we are at the end of the heap */
+    if (!GET_SIZE(HDRP(ptr))) {
+        /* We extend the heap and extend the old block to the new heap size */
+        size_t extendSize = MAX(asize, CHUNKSIZE);
 
-        // void *tmpPtr = /*(void*)*/FTRP(ptr);
-        if (prevSize - asize <= OVERHEAD) {
-            return ptr;
+        newPtr = extend_heap(extendSize/WSIZE);
+        if (newPtr == NULL) {
+            return NULL;
         }
+        size_t newSize = extendSize + GET_SIZE(HDRP(ptr)) - asize;
 
         PUT(HDRP(ptr), PACK(asize, 1));
         PUT(FTRP(ptr), PACK(asize, 1));
-        PUT(HDRP(NEXT_BLKP(ptr)), PACK(prevSize-asize, 1));
-        free(NEXT_BLKP(ptr));
-        
-        // free(tmpPtr);
+        //removeFree(ptr);
+        void *tmpPtr = NEXT_BLKP(ptr);
+        PUT(HDRP(tmpPtr), PACK(newSize, 0));
+        PUT(FTRP(tmpPtr), PACK(newSize, 0));
+
+        // printf("After realloc\n");
+        //mm_checkheap(VERBOSE);
         return ptr;
-    }
+    } 
 
-    /* Block size is increased */
-    if (asize > prevSize) {
-        size_t difference = (prevSize + GET_SIZE(HDRP(NEXT_BLKP(ptr))) - asize);
+    /* The next block is free - we try to extend to it*/
+    if (!GET_ALLOC(HDRP(NEXT_BLKP(ptr)))) {
+        /* We  */
+        newPtr = NEXT_BLKP(ptr);
+        size_t newTotalSize = GET_SIZE(HDRP(ptr)) + GET_SIZE(HDRP(newPtr));
 
-        /* Check if the next block is free and that it's big enough*/
-        if (!GET_ALLOC(HDRP(NEXT_BLKP(ptr))) || !GET_SIZE(HDRP(NEXT_BLKP(ptr)))) {
+        if (newTotalSize >= asize)
+        {
+            size_t newSize = newTotalSize - asize;
 
-            if (GET_SIZE(HDRP(NEXT_BLKP(ptr))) >= difference) { 
-                /* We increase the block to the next block and keep the remainder of it free */ 
+            if (newSize < MINSIZE) {
+                PUT(HDRP(ptr), PACK(newTotalSize, 1));
+                PUT(FTRP(ptr), PACK(newTotalSize, 1));
+                //removeFree(ptr);
+
+                // printf("After realloc\n");
+                //mm_checkheap(VERBOSE);
+
+                return ptr;    
+            }
+            else {
                 PUT(HDRP(ptr), PACK(asize, 1));
-                PUT(HDRP(NEXT_BLKP(ptr)), PACK(difference, 0));
-                PUT(FTRP(NEXT_BLKP(ptr)), PACK(difference, 0));
                 PUT(FTRP(ptr), PACK(asize, 1));
+                //removeFree(ptr);
+                void *tmpPtr = NEXT_BLKP(ptr);
+                PUT(HDRP(tmpPtr), PACK(newSize, 0));
+                PUT(FTRP(tmpPtr), PACK(newSize, 0));
+
+                // printf("After realloc\n");
+                //mm_checkheap(VERBOSE);
+
                 return ptr;
             }
-        } 
+        } else if (!GET_SIZE(HDRP(newPtr))) {
+            size_t extendSize = MAX(asize, CHUNKSIZE);
+            extend_heap(extendSize/WSIZE);
+            size_t newSize = extendSize + newTotalSize - asize;
 
+            PUT(HDRP(ptr), PACK(asize, 1));
+            PUT(FTRP(ptr), PACK(asize, 1));
+            //removeFree(ptr);
+            void *tmpPtr = NEXT_BLKP(ptr);
+            PUT(HDRP(tmpPtr), PACK(newSize, 0));
+            PUT(FTRP(tmpPtr), PACK(newSize, 0));
 
-        else {
-            newPtr = malloc(size);
-            // If malloc fails - return 0
-            if (!newPtr) {
-                return NULL;
-            }
-            memcpy(newPtr, ptr, prevSize);
-            mm_free(ptr);
+            //printf("After realloc\n");
+            //mm_checkheap(VERBOSE);
+            
+            return ptr;
         }
     }
+
+    newPtr = mm_malloc(size);
+
+    memcpy(newPtr, ptr, (GET_SIZE(HDRP(ptr))));
+    mm_free(ptr);
+
+    //printf("After realloc\n");
+    //mm_checkheap(VERBOSE);
+
     return newPtr;
+
+
+    // /* decrese block size */
+    // if (asize <= prevSize) {
+    //     /* update header and footer and free the difference of the blocks */
+    //     // size_t difference = prevSize - asize;
+
+    //     // void *tmpPtr = /*(void*)*/FTRP(ptr);
+    //     if (prevSize - asize <= OVERHEAD) {
+    //         return ptr;
+    //     }
+
+    //     PUT(HDRP(ptr), PACK(asize, 1));
+    //     PUT(FTRP(ptr), PACK(asize, 1));
+    //     PUT(HDRP(NEXT_BLKP(ptr)), PACK(prevSize-asize, 1));
+    //     free(NEXT_BLKP(ptr));
+        
+    //     // free(tmpPtr);
+    //     return ptr;
+    // }
+
+    // /* Block size is increased */
+    // if (asize > prevSize) {
+    //     size_t difference = (prevSize + GET_SIZE(HDRP(NEXT_BLKP(ptr))) - asize);
+
+    //     /* Check if the next block is free and that it's big enough*/
+    //     if (!GET_ALLOC(HDRP(NEXT_BLKP(ptr))) || !GET_SIZE(HDRP(NEXT_BLKP(ptr)))) {
+
+    //         if (GET_SIZE(HDRP(NEXT_BLKP(ptr))) >= difference) { 
+    //             /* We increase the block to the next block and keep the remainder of it free */ 
+    //             PUT(HDRP(ptr), PACK(asize, 1));
+    //             PUT(HDRP(NEXT_BLKP(ptr)), PACK(difference, 0));
+    //             PUT(FTRP(NEXT_BLKP(ptr)), PACK(difference, 0));
+    //             PUT(FTRP(ptr), PACK(asize, 1));
+    //             return ptr;
+    //         }
+    //     } 
+
+
+    //     else {
+    //         newPtr = malloc(size);
+    //         // If malloc fails - return 0
+    //         if (!newPtr) {
+    //             return NULL;
+    //         }
+    //         memcpy(newPtr, ptr, prevSize);
+    //         mm_free(ptr);
+    //     }
+    // }
+    // return newPtr;
+
+
+
+
     
     // newptr = mm_malloc(size);
     // if (size < prevSize) {
