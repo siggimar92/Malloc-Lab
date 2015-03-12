@@ -357,8 +357,7 @@ void *mm_realloc(void *ptr, size_t size)
 
     // // return newPtr;
 
-    size_t oldsize;
-    void *newptr;
+    void *bp;
     size_t asize;
 
     if (size <= DSIZE) {
@@ -367,57 +366,76 @@ void *mm_realloc(void *ptr, size_t size)
         asize = DSIZE * ((size + (OVERHEAD) + (DSIZE-1)) / DSIZE);
     }
 
-    /* If size <= 0 then this is just free, and we return NULL. */
-    if(size <= 0) {
-        free(ptr);
-        return 0;
-    }
-
-    /* If oldptr is NULL, then this is just malloc. */
-    if(ptr == NULL) {
-        return malloc(size);
-    }
-
-    /* Get the size of the original block */
-    oldsize = GET_SIZE(HDRP(ptr));
-    
-    /* If the size doesn't need to be changed, return orig pointer */
-    if (asize == oldsize)
-        return ptr;
-    
-    /* If the size needs to be decreased, shrink the block and 
-     * return the same pointer */
-    if(asize <= oldsize)
+    if(!GETSIZE(NEXT_BLKP(ptr)))
     {
-        size = asize;
+        size_t extendsize = MAX(asize, CHUNKSIZE);
+        bp = extend_heap(extendsize/4);
+        size_t nsize = extendsize + GET_SIZE(ptr) - asize;
+        
+        PUT(HDRP(ptr), PACK(asize,1));
+        PUT(FTRP(ptr), PACK(asize,1));
 
-        /* If a new block couldn't fit in the remaining space, 
-         * return the pointer */
-        if(oldsize - size <= OVERHEAD)
+        void *blk = NEXT_BLKP(ptr);
+        PUT(HDRP(blk), PACK(nsize,0));
+        PUT(FTRP(blk), PACK(nsize, 0));
+        // tree_root = mm_insert(tree_root, blk);
+        
+        return ptr;     
+    }
+    
+    if(!(GET_ALLOC(HDRP(NEXT_BLKP(ptr)))))
+    {
+        bp = NEXT_BLKP(ptr);
+        
+        size_t total = GETSIZE(ptr) + GETSIZE(bp);
+
+        if(total >= asize)
+        {
+            size_t nsize = total - asize;
+            // tree_root = mm_remove(tree_root,bp);
+            
+            if(nsize < 16)
+            {
+                PUT(HDRP(ptr), PACK(total, 1));
+                PUT(FTRP(ptr), PACK(total, 1));
+                return ptr;
+            }
+            else 
+            {
+                PUT(HDRP(ptr), PACK(asize, 1));
+                PUT(FTRP(ptr), PACK(asize, 1));
+                
+                void *blk = NEXT_BLKP(ptr);
+                PUT(HDRP(blk), PACK(nsize,0));
+                PUT(FTRP(blk), PACK(nsize,0));
+                // tree_root = mm_insert(tree_root, blk);
+                
+                return ptr;
+            }                                    
+        }
+
+        else if(!GETSIZE(NEXT_BLKP(bp)))
+        {
+            size_t extendsize = MAX(asize, CHUNKSIZE);
+            extend_heap(extendsize/4);
+            size_t nsize = extendsize + total - asize;
+            
+            PUT(HDRP(ptr), PACK(asize,1));
+            PUT(FTRP(ptr), PACK(asize,1));
+
+            void *blk = NEXT_BLKP(ptr);
+            PUT(HDRP(blk), PACK(nsize,0));
+            PUT(FTRP(blk), PACK(nsize,0));
+            // tree_root = mm_insert(tree_root, blk);
             return ptr;
-        PUT(HDRP(ptr), PACK(size, 1));
-        PUT(FTRP(ptr), PACK(size, 1));
-        PUT(HDRP(NEXT_BLKP(ptr)), PACK(oldsize-size, 1));
-        free(NEXT_BLKP(ptr));
-        return ptr;
+        }
     }
-
-    newptr = malloc(size);
-
-    /* If realloc() fails the original block is left untouched  */
-    if(!newptr) {
-        return 0;
-    }
-
-    /* Copy the old data. */
-    if(size < oldsize) oldsize = size;
-    memcpy(newptr, ptr, oldsize);
-
-    /* Free the old block. */
-    free(ptr);
-
-    return newptr;
-
+    
+    bp = mm_malloc(size);
+    
+    memcpy(bp, ptr, (GETSIZE(ptr) - DSIZE));
+    mm_free(ptr);
+    return bp;  
 }
 
 
