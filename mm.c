@@ -132,6 +132,7 @@ static void printblock(void *bp);
 static void checkblock(void *bp);
 static void insertFree(void *bp);
 static void removeFree(void *bp);
+static void printfreelist();
 
 /* single word (4) or double word (8) alignment */
 #define ALIGNMENT 8
@@ -166,6 +167,7 @@ int mm_init(void)
     if (extend_heap(CHUNKSIZE/WSIZE) == NULL) {
         return -1;
     }
+
     return 0;
 }
 
@@ -239,6 +241,7 @@ void mm_free(void *ptr)
     PUT(HDRP(ptr), PACK(size, 0));
     PUT(FTRP(ptr), PACK(size, 0));
     coalesce(ptr);
+
 }
 
 /*
@@ -323,7 +326,7 @@ void *mm_realloc(void *ptr, size_t size)
         removeFree(ptr);
         void *tmpPtr = NEXT_BLKP(ptr);
         PUT(HDRP(tmpPtr), PACK(newSize, 0));
-        PUT(HDRP(tmpPtr), PACK(newSize, 0));
+        PUT(FTRP(tmpPtr), PACK(newSize, 0));
 
         return ptr;
     }
@@ -692,24 +695,33 @@ static void insertFree(void *bp)
 /* $begin mmremoveFree */
 static void removeFree(void *bp)
 {
-    // if (free_listp == NULL) {
-    //     return;
-    // }
-    // if (PREV_FREE(bp) == NULL) {
-    //     free_listp = NEXT_FREE(bp);
-    //     // PREV_FREE(free_listp) = NULL;
-    //     PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
-    // } else {
-    //     NEXT_FREE(PREV_FREE(bp)) = NEXT_FREE(bp);
-    //     PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
-    // }
-    if (PREV_FREE(bp)) 
+    if (free_listp == NULL) {
+        return;
+    }
+    if (PREV_FREE(bp) == NULL) {
+        free_listp = NEXT_FREE(bp);
+        // PREV_FREE(free_listp) = NULL;
+        PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
+    } else {
         NEXT_FREE(PREV_FREE(bp)) = NEXT_FREE(bp);
-    else
-        free_listp = NEXT_FREE(bp); 
-    PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
+        PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
+    }
+    // if (PREV_FREE(bp)) { 
+    //     NEXT_FREE(PREV_FREE(bp)) = NEXT_FREE(bp);
+    // }
+    // else
+    //     free_listp = NEXT_FREE(bp); 
+    // PREV_FREE(NEXT_FREE(bp)) = PREV_FREE(bp);
 }
 /* $end mmremoveFree */
 
-
+static void printfreelist()
+{
+    printf("ALL list: ");
+    char *bp = heap_listp;
+    for (bp = heap_listp; bp != NULL; bp = (char *)*NEXT_BLKP(bp)) {
+        printf(" %lx -> ",(long)bp);
+    }
+    printf("END\n");
+}
 
