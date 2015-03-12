@@ -155,7 +155,7 @@ void mm_checkheap(int verbose) ;
 int mm_init(void)
 {
     // printf("Before init\n");
-    // mm_checkheap(VERBOSE);
+    // //mm_checkheap(VERBOSE);
     /* create the initial empty heap */
     if ((heap_listp = mem_sbrk(4*WSIZE)) == NULL) {
         return -1;
@@ -173,7 +173,7 @@ int mm_init(void)
         return -1;
     }
     // printf("after init\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
 
     return 0;
 }
@@ -204,7 +204,7 @@ void *mm_malloc(size_t size)
     //     return (void *)((char *)p + SIZE_T_SIZE);
     // }
     // printf("\nBefore malloc\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
     size_t asize;      /* adjusted block size */
     size_t extendsize; /* amount to extend heap if no fit */
     char *bp;
@@ -232,7 +232,7 @@ void *mm_malloc(size_t size)
     place(bp, asize);
 
     // printf("After Malloc\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
     return bp;
 }
 
@@ -248,7 +248,7 @@ void *mm_malloc(size_t size)
 void mm_free(void *ptr)
 {
     //printf("\nBefore free\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
 
     if (!ptr) {
         return;
@@ -261,7 +261,7 @@ void mm_free(void *ptr)
     coalesce(ptr);
 
     //printf("After Free\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
 
 }
 
@@ -302,7 +302,7 @@ void *mm_realloc(void *ptr, size_t size)
     // return newptr;
 
     // printf("\nBefore realloc\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
 
     void *newPtr = ptr;
     size_t prevSize; /* Current size of the block to be changed */
@@ -356,7 +356,7 @@ void *mm_realloc(void *ptr, size_t size)
         PUT(FTRP(tmpPtr), PACK(newSize, 0));
 
         // printf("After realloc\n");
-        mm_checkheap(VERBOSE);
+        //mm_checkheap(VERBOSE);
         return ptr;
     } 
 
@@ -376,7 +376,7 @@ void *mm_realloc(void *ptr, size_t size)
                 removeFree(ptr);
 
                 // printf("After realloc\n");
-                mm_checkheap(VERBOSE);
+                //mm_checkheap(VERBOSE);
 
                 return ptr;    
             }
@@ -389,7 +389,7 @@ void *mm_realloc(void *ptr, size_t size)
                 PUT(FTRP(tmpPtr), PACK(newSize, 0));
 
                 // printf("After realloc\n");
-                mm_checkheap(VERBOSE);
+                //mm_checkheap(VERBOSE);
 
                 return ptr;
             }
@@ -406,7 +406,7 @@ void *mm_realloc(void *ptr, size_t size)
             PUT(FTRP(tmpPtr), PACK(newSize, 0));
 
             //printf("After realloc\n");
-            mm_checkheap(VERBOSE);
+            //mm_checkheap(VERBOSE);
             
             return ptr;
         }
@@ -418,7 +418,7 @@ void *mm_realloc(void *ptr, size_t size)
     mm_free(ptr);
 
     //printf("After realloc\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
 
     return newPtr;
 
@@ -496,7 +496,7 @@ void *mm_realloc(void *ptr, size_t size)
 static void *coalesce(void *bp) 
 {
     // printf("\nBefore Coalesce\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
 
     //size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
     size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp))) || PREV_BLKP(bp) == bp;
@@ -542,7 +542,7 @@ static void *coalesce(void *bp)
     }
 
     // printf("After Coalesce\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
 
     insertFree(bp);
     return bp;
@@ -645,7 +645,7 @@ static void *extend_heap(size_t words)
 {
 
     // printf("\nBefore extend_heap\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
 
     char *bp;
     size_t size;
@@ -661,7 +661,7 @@ static void *extend_heap(size_t words)
     PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1)); /* new epilogue header */
 
     // printf("After extend_heap\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
 
     /* Coalesce if the previous block was free */
     return coalesce(bp);
@@ -678,7 +678,7 @@ static void place(void *bp, size_t asize)
 /* $end mmplace-proto */
 {
     // printf("\nBefore place\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
 
     size_t csize = GET_SIZE(HDRP(bp));   
 
@@ -698,7 +698,7 @@ static void place(void *bp, size_t asize)
     }
 
     // printf("After place\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
 }
 /* $end mmplace */
 
@@ -707,7 +707,7 @@ static void place(void *bp, size_t asize)
 static void insertFree(void *bp)
 {
     // printf("\nBefore insertFree\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
 
     if (free_listp == NULL) {
         NEXT_FREE(bp) = NULL;
@@ -721,7 +721,7 @@ static void insertFree(void *bp)
     }
 
     //printf("After insertFree\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
 }
 /* $end mminsertFree */
 
@@ -730,7 +730,7 @@ static void insertFree(void *bp)
 static void removeFree(void *bp)
 {
     // printf("\nBefore removeFree\n");
-    mm_checkheap(VERBOSE);
+    //mm_checkheap(VERBOSE);
     /* no block in list */
     if (free_listp == NULL) {
         return;
@@ -760,7 +760,7 @@ static void removeFree(void *bp)
     }
 
     // printf("\nAfter removeFree\n");
-    mm_checkheap(VERBOSE);
+    ////mm_checkheap(VERBOSE);
 }
 /* $end mmremoveFree */
 
