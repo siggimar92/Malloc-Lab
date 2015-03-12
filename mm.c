@@ -9,7 +9,7 @@
  * 
  *
  *
- * ************** HANDIN 1 - Description *****************
+ * ************** Code Description *****************
  * 
  * Dynamic memory allocator.
  * We will use explicit list to keep track of the memory.
@@ -32,7 +32,7 @@
  *            this cannot happen unless we call the coalesce function before 
  *            to merge the two free aligning blocks.
  *
- * We will use the Best fit method to allocate the memory to best fit the 
+ * We will use the First fit method to allocate the memory to best fit the 
  * external fragmentation. This will result in a bit slower memory allocation 
  * but better fragmented and therefore better utilised allocation. This method 
  * runs trough the entire heap each time a malloc is performed, and tries to 
@@ -174,17 +174,6 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-    // from old file:
-
-    // int newsize = ALIGN(size + SIZE_T_SIZE);
-    // void *p = mem_sbrk(newsize);
-    // if (p == (void *)-1)
-    //     return NULL;
-    // else {
-    //     *(size_t *)p = size;
-    //     return (void *)((char *)p + SIZE_T_SIZE);
-    // }
-
     size_t asize;      /* adjusted block size */
     size_t extendsize; /* amount to extend heap if no fit */
     char *bp;
@@ -251,25 +240,6 @@ void mm_free(void *ptr)
  */
 void *mm_realloc(void *ptr, size_t size)
 {
-    // from old file:
-
-    // void *oldptr = ptr;
-    // void *newptr;
-    // size_t copySize;
-    
-    // newptr = mm_malloc(size);
-    // if (newptr == NULL)
-    //     return NULL;
-    // copySize = *(size_t *)((char *)oldptr - SIZE_T_SIZE);
-    // if (size < copySize)
-    //     copySize = size;
-    // memcpy(newptr, oldptr, copySize);
-    // mm_free(oldptr);
-    // return newptr;
-
-    // printf("\nBefore realloc\n");
-    //mm_checkheap(VERBOSE);
-
     void *newPtr = ptr;
     size_t prevSize; /* Current size of the block to be changed */
     size_t asize;    /* Our calculated size of how big the block actually needs to be with header, footer, etc..  */
@@ -280,26 +250,18 @@ void *mm_realloc(void *ptr, size_t size)
         asize = DSIZE * ((size + (OVERHEAD) + (DSIZE-1)) / DSIZE);
     }
 
-    // if ((newPtr = mm_malloc(size)) == NULL) {
-    //     printf("ERROR: mm_malloc failed in mm_realloc\n");
-    //     exit(1);
-    // }
-
     if (ptr == NULL) {
-        //printf("ptr == NULL\n");
         return mm_malloc(size);
     }
 
     if (size <= 0) {
-        //printf("size <= 0\n");
-        mm_free(ptr);  /* ATH */
+        mm_free(ptr);
         return 0;
     }
 
     prevSize = GET_SIZE(HDRP(ptr));
 
     if (prevSize == asize) {
-        //printf("prevSize == asize\n");
         return ptr;
     }    
 
@@ -328,7 +290,6 @@ void *mm_realloc(void *ptr, size_t size)
 
     /* The next block is free - we try to extend to it*/
     if (!GET_ALLOC(HDRP(NEXT_BLKP(ptr)))) {
-        /* We  */
         newPtr = NEXT_BLKP(ptr);
         size_t newTotalSize = GET_SIZE(HDRP(ptr)) + GET_SIZE(HDRP(newPtr));
 
@@ -387,70 +348,6 @@ void *mm_realloc(void *ptr, size_t size)
     //mm_checkheap(VERBOSE);
 
     return newPtr;
-
-
-    // /* decrese block size */
-    // if (asize <= prevSize) {
-    //     /* update header and footer and free the difference of the blocks */
-    //     // size_t difference = prevSize - asize;
-
-    //     // void *tmpPtr = /*(void*)*/FTRP(ptr);
-    //     if (prevSize - asize <= OVERHEAD) {
-    //         return ptr;
-    //     }
-
-    //     PUT(HDRP(ptr), PACK(asize, 1));
-    //     PUT(FTRP(ptr), PACK(asize, 1));
-    //     PUT(HDRP(NEXT_BLKP(ptr)), PACK(prevSize-asize, 1));
-    //     free(NEXT_BLKP(ptr));
-        
-    //     // free(tmpPtr);
-    //     return ptr;
-    // }
-
-    // /* Block size is increased */
-    // if (asize > prevSize) {
-    //     size_t difference = (prevSize + GET_SIZE(HDRP(NEXT_BLKP(ptr))) - asize);
-
-    //     /* Check if the next block is free and that it's big enough*/
-    //     if (!GET_ALLOC(HDRP(NEXT_BLKP(ptr))) || !GET_SIZE(HDRP(NEXT_BLKP(ptr)))) {
-
-    //         if (GET_SIZE(HDRP(NEXT_BLKP(ptr))) >= difference) { 
-    //             /* We increase the block to the next block and keep the remainder of it free */ 
-    //             PUT(HDRP(ptr), PACK(asize, 1));
-    //             PUT(HDRP(NEXT_BLKP(ptr)), PACK(difference, 0));
-    //             PUT(FTRP(NEXT_BLKP(ptr)), PACK(difference, 0));
-    //             PUT(FTRP(ptr), PACK(asize, 1));
-    //             return ptr;
-    //         }
-    //     } 
-
-
-    //     else {
-    //         newPtr = malloc(size);
-    //         // If malloc fails - return 0
-    //         if (!newPtr) {
-    //             return NULL;
-    //         }
-    //         memcpy(newPtr, ptr, prevSize);
-    //         mm_free(ptr);
-    //     }
-    // }
-    // return newPtr;
-
-
-
-
-    
-    // newptr = mm_malloc(size);
-    // if (size < prevSize) {
-    //     prevSize = size;
-    // }
-
-    // memcpy(newPtr, ptr, prevSize);
-    // mm_free(ptr);
-
-    // return newPtr;
 }
 
 
@@ -521,45 +418,6 @@ void mm_checkheap(int verbose)
  */
 static void *find_fit(size_t asize)
 {
-    // /* best fit search */
-    // void *bp = heap_listp;
-    // void *tmpPtr = bp; /* stores the ptr to the best fitting block so far */
-    
-    // // heap_lisp = ptr to first bp
-    // // GET_SIZE(HDRP(bp)) = size of block
-
-    // if (asize <= 0)
-    // {
-    //     return NULL;
-    // }
-    // assert(asize > 0);
-
-    // for (; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) 
-    // {
-    //     if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) 
-    //     {
-    //         if (asize == GET_SIZE(HDRP(bp))) 
-    //         {
-    //             return bp;
-    //         }
-    //         else 
-    //         {
-    //             if (GET_SIZE(HDRP(bp)) < GET_SIZE(HDRP(tmpPtr)))
-    //             {
-    //                 tmpPtr = bp;
-    //             }
-    //         }
-    //     }
-    // }
-
-    // /* ????????? ef tmpptr sem er settur sem heap_listp i byrjun er staerri en asize tha return 0 */
-    // if (GET_SIZE(HDRP(tmpPtr)) > asize)
-    // {
-    //     return NULL;
-    // }
-    
-    // return tmpPtr;
-
     /* first fit search */
     void *bp;
 
