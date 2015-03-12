@@ -117,6 +117,8 @@ team_t team = {
 #define NEXT_FREE(bp)  (*(void **)(bp + WSIZE))
 #define PREV_FREE(bp)  (*(void **)(bp))
 
+#define VERBOSE 1
+
 /* $end mallocmacros */
 
 /* Global variables */
@@ -151,6 +153,8 @@ static void print();
  */
 int mm_init(void)
 {
+    printf("Before init\n");
+    mm_checkheap(VERBOSE);
     /* create the initial empty heap */
     if ((heap_listp = mem_sbrk(4*WSIZE)) == NULL) {
         return -1;
@@ -167,6 +171,8 @@ int mm_init(void)
     if (extend_heap(CHUNKSIZE/WSIZE) == NULL) {
         return -1;
     }
+    printf("after init\n");
+    mm_checkheap(VERBOSE);
 
     return 0;
 }
@@ -196,7 +202,8 @@ void *mm_malloc(size_t size)
     //     *(size_t *)p = size;
     //     return (void *)((char *)p + SIZE_T_SIZE);
     // }
-
+    printf("Before malloc\n");
+    mm_checkheap(VERBOSE);
     size_t asize;      /* adjusted block size */
     size_t extendsize; /* amount to extend heap if no fit */
     char *bp;
@@ -222,6 +229,9 @@ void *mm_malloc(size_t size)
     if ((bp = extend_heap(extendsize/WSIZE)) == NULL)
         return NULL;
     place(bp, asize);
+
+    printf("After Malloc\n");
+    mm_checkheap(VERBOSE);
     return bp;
 }
 
@@ -236,11 +246,16 @@ void *mm_malloc(size_t size)
  */
 void mm_free(void *ptr)
 {
+    printf("Before free\n");
+    mm_checkheap(VERBOSE);
     size_t size = GET_SIZE(HDRP(ptr));
 
     PUT(HDRP(ptr), PACK(size, 0));
     PUT(FTRP(ptr), PACK(size, 0));
     coalesce(ptr);
+
+    printf("After Free\n");
+    mm_checkheap(VERBOSE);
 
 }
 
@@ -280,6 +295,9 @@ void *mm_realloc(void *ptr, size_t size)
     // mm_free(oldptr);
     // return newptr;
 
+    printf("Before realloc\n");
+    mm_checkheap(VERBOSE);
+
     void *newPtr = ptr;
     size_t prevSize; /* Current size of the block to be changed */
     size_t asize;    /* Our calculated size of how big the block actually needs to be with header, footer, etc..  */
@@ -296,10 +314,12 @@ void *mm_realloc(void *ptr, size_t size)
     // }
 
     if (ptr == NULL) {
+        printf("ptr == NULL\n");
         return mm_malloc(size);
     }
 
     if (size <= 0) {
+        printf("size <= 0\n");
         mm_free(ptr);  /* ATH */
         return 0;
     }
@@ -307,6 +327,7 @@ void *mm_realloc(void *ptr, size_t size)
     prevSize = GET_SIZE(HDRP(ptr));
 
     if (prevSize == asize) {
+        printf("prevSize == asize\n");
         return ptr;
     }    
 
@@ -328,8 +349,10 @@ void *mm_realloc(void *ptr, size_t size)
         PUT(HDRP(tmpPtr), PACK(newSize, 0));
         PUT(FTRP(tmpPtr), PACK(newSize, 0));
 
+        printf("After realloc\n");
+        mm_checkheap(VERBOSE);
         return ptr;
-    }
+    } 
 
     /* The next block is free - we try to extend to it*/
     if (!GET_ALLOC(HDRP(NEXT_BLKP(ptr)))) {
@@ -345,6 +368,10 @@ void *mm_realloc(void *ptr, size_t size)
                 PUT(HDRP(ptr), PACK(newTotalSize, 1));
                 PUT(FTRP(ptr), PACK(newTotalSize, 1));
                 removeFree(ptr);
+
+                printf("After realloc\n");
+                mm_checkheap(VERBOSE);
+
                 return ptr;    
             }
             else {
@@ -354,6 +381,9 @@ void *mm_realloc(void *ptr, size_t size)
                 void *tmpPtr = NEXT_BLKP(ptr);
                 PUT(HDRP(tmpPtr), PACK(newSize, 0));
                 PUT(FTRP(tmpPtr), PACK(newSize, 0));
+
+                printf("After realloc\n");
+                mm_checkheap(VERBOSE);
 
                 return ptr;
             }
@@ -368,6 +398,10 @@ void *mm_realloc(void *ptr, size_t size)
             void *tmpPtr = NEXT_BLKP(ptr);
             PUT(HDRP(tmpPtr), PACK(newSize, 0));
             PUT(FTRP(tmpPtr), PACK(newSize, 0));
+
+            printf("After realloc\n");
+            mm_checkheap(VERBOSE);
+            
             return ptr;
         }
     }
@@ -376,6 +410,10 @@ void *mm_realloc(void *ptr, size_t size)
 
     memcpy(newPtr, ptr, (GET_SIZE(HDRP(ptr))));
     mm_free(ptr);
+
+    printf("After realloc\n");
+    mm_checkheap(VERBOSE);
+
     return newPtr;
 
 
@@ -451,6 +489,9 @@ void *mm_realloc(void *ptr, size_t size)
  */
 static void *coalesce(void *bp) 
 {
+    printf("Before Coalesce\n");
+    mm_checkheap(VERBOSE);
+
     size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
     size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
     size_t size = GET_SIZE(HDRP(bp));
@@ -488,31 +529,11 @@ static void *coalesce(void *bp)
         bp = PREV_BLKP(bp);
     }
 
+    printf("After Coalesce\n");
+    mm_checkheap(VERBOSE);
+
     insertFree(bp);
     return bp;
-}
-
-void mm_checkheap(int verbose) 
-{
-    char *bp = heap_listp;
-
-    if (verbose)
-        printf("Heap (%p):\n", heap_listp);
-
-    if ((GET_SIZE(HDRP(heap_listp)) != DSIZE) || !GET_ALLOC(HDRP(heap_listp)))
-        printf("Bad prologue header\n");
-    checkblock(heap_listp);
-
-    for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
-        if (verbose) 
-            printblock(bp);
-        checkblock(bp);
-    }
-     
-    if (verbose)
-        printblock(bp);
-    if ((GET_SIZE(HDRP(bp)) != 0) || !(GET_ALLOC(HDRP(bp))))
-        printf("Bad epilogue header\n");
 }
 
 /* 
@@ -603,32 +624,6 @@ static void *find_fit(size_t asize)
     // return tmpPtr;
 }
 
-static void printblock(void *bp) 
-{
-    size_t hsize, halloc, fsize, falloc;
-
-    hsize = GET_SIZE(HDRP(bp));
-    halloc = GET_ALLOC(HDRP(bp));  
-    fsize = GET_SIZE(FTRP(bp));
-    falloc = GET_ALLOC(FTRP(bp));  
-    
-    if (hsize == 0) {
-        printf("%p: EOL\n", bp);
-        return;
-    }
-
-    printf("%p: header: [%d:%c] footer: [%d:%c]\n", bp, 
-           hsize, (halloc ? 'a' : 'f'), 
-           fsize, (falloc ? 'a' : 'f')); 
-}
-
-static void checkblock(void *bp) 
-{
-    if ((size_t)bp % 8)
-        printf("Error: %p is not doubleword aligned\n", bp);
-    if (GET(HDRP(bp)) != GET(FTRP(bp)))
-        printf("Error: header does not match footer\n");
-}
 
 /* 
  * extend_heap - Extend heap with free block and return its block pointer
@@ -636,6 +631,10 @@ static void checkblock(void *bp)
 /* $begin mmextendheap */
 static void *extend_heap(size_t words) 
 {
+
+    printf("Before extend_heap\n");
+    mm_checkheap(VERBOSE);
+
     char *bp;
     size_t size;
         
@@ -648,6 +647,9 @@ static void *extend_heap(size_t words)
     PUT(HDRP(bp), PACK(size, 0));         /* free block header */
     PUT(FTRP(bp), PACK(size, 0));         /* free block footer */
     PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1)); /* new epilogue header */
+
+    printf("After extend_heap\n");
+    mm_checkheap(VERBOSE);
 
     /* Coalesce if the previous block was free */
     return coalesce(bp);
@@ -663,11 +665,15 @@ static void *extend_heap(size_t words)
 static void place(void *bp, size_t asize)
 /* $end mmplace-proto */
 {
+    printf("Before place\n");
+    mm_checkheap(VERBOSE);
+
     size_t csize = GET_SIZE(HDRP(bp));   
 
     if ((csize - asize) >= (DSIZE + OVERHEAD)) { 
         PUT(HDRP(bp), PACK(asize, 1));
         PUT(FTRP(bp), PACK(asize, 1));
+        removeFree(bp);
         bp = NEXT_BLKP(bp);
         PUT(HDRP(bp), PACK(csize-asize, 0));
         PUT(FTRP(bp), PACK(csize-asize, 0));
@@ -676,7 +682,11 @@ static void place(void *bp, size_t asize)
     else { 
         PUT(HDRP(bp), PACK(csize, 1));
         PUT(FTRP(bp), PACK(csize, 1));
+        removeFree(bp);
     }
+
+    printf("After place\n");
+    mm_checkheap(VERBOSE);
 }
 /* $end mmplace */
 
@@ -684,6 +694,9 @@ static void place(void *bp, size_t asize)
 /* $begin mminsertFree */
 static void insertFree(void *bp)
 {
+    printf("Before insertFree\n");
+    mm_checkheap(VERBOSE);
+
     if (free_listp == NULL) {
         NEXT_FREE(bp) = NULL;
         PREV_FREE(bp) = NULL;
@@ -694,6 +707,9 @@ static void insertFree(void *bp)
         PREV_FREE(bp) = NULL;
         free_listp = bp;
     }
+
+    printf("After insertFree\n");
+    mm_checkheap(VERBOSE);
 }
 /* $end mminsertFree */
 
@@ -701,6 +717,8 @@ static void insertFree(void *bp)
 /* $begin mmremoveFree */
 static void removeFree(void *bp)
 {
+    printf("Before removeFree\n");
+    mm_checkheap(VERBOSE);
     /* no block in list */
     if (free_listp == NULL) {
         return;
@@ -728,8 +746,78 @@ static void removeFree(void *bp)
         PREV_FREE(bp) = NULL;
         NEXT_FREE(bp) = NULL;
     }
+
+    printf("After removeFree\n");
+    mm_checkheap(VERBOSE);
 }
 /* $end mmremoveFree */
+
+/* DEBUG HELPER FUNCTIONS */
+void mm_checkheap(int verbose) 
+{
+    char *bp = heap_listp;
+    char *fp = free_listp;
+
+    if (verbose)
+        printf("Heap (%p):\n", heap_listp);
+
+    printf("heap_listp: %p \n", heap_listp);
+    if ((GET_SIZE(HDRP(heap_listp)) != DSIZE) || !GET_ALLOC(HDRP(heap_listp)))
+        printf("Bad prologue header\n");
+    checkblock(heap_listp);
+
+    printf("free_listp: %p \n", free_listp);
+    int counter = 1;
+    for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
+        if (verbose) 
+            printf("%d: ", counter);
+            printblock(bp);
+        checkblock(bp);
+        counter++;
+    }
+
+    counter = 1;
+    for (fp = free_listp; GET_ALLOC(HDRP(fp)) == 0; fp = NEXT_FREE(fp)) {
+        if (verbose)
+            printf("%d: ", counter);
+            printblock(fp);
+        checkblock(fp);
+        counter++;
+    }
+
+     
+    if (verbose)
+        printblock(bp);
+    if ((GET_SIZE(HDRP(bp)) != 0) || !(GET_ALLOC(HDRP(bp))))
+        printf("Bad epilogue header\n");
+}
+
+static void printblock(void *bp) 
+{
+    size_t hsize, halloc, fsize, falloc;
+
+    hsize = GET_SIZE(HDRP(bp));
+    halloc = GET_ALLOC(HDRP(bp));  
+    fsize = GET_SIZE(FTRP(bp));
+    falloc = GET_ALLOC(FTRP(bp));  
+    
+    if (hsize == 0) {
+        printf("%p: EOL\n", bp);
+        return;
+    }
+
+    printf("%p: header: [%d:%c] footer: [%d:%c]\n", bp, 
+           hsize, (halloc ? 'a' : 'f'), 
+           fsize, (falloc ? 'a' : 'f')); 
+}
+
+static void checkblock(void *bp) 
+{
+    if ((size_t)bp % 8)
+        printf("Error: %p is not doubleword aligned\n", bp);
+    if (GET(HDRP(bp)) != GET(FTRP(bp)))
+        printf("Error: header does not match footer\n");
+}
 
 static void print()
 {
@@ -756,7 +844,7 @@ static void print()
             printf("%p: EOL\n", bp);
             return;
         }
-
+ 
         printf("%d: %p: header: [%d:%c] footer: [%d:%c]\n", counter, bp, 
                hsize, (halloc ? 'a' : 'f'), 
                fsize, (falloc ? 'a' : 'f')); 
