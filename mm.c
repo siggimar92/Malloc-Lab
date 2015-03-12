@@ -135,6 +135,7 @@ int mm_init(void)
 {
     if (VERBOSE == 2) {
         printf("### Called mm_init ###\n");
+        mm_checkheap(VERBOSE);
     } else if (VERBOSE == 1) {
         mm_checkheap(VERBOSE);
     }
@@ -174,6 +175,7 @@ void *mm_malloc(size_t size)
 {
     if (VERBOSE == 2) {
         printf("### Called mm_malloc ###\n");
+        mm_checkheap(VERBOSE);
     } else if (VERBOSE == 1) {
         mm_checkheap(VERBOSE);
     }
@@ -218,6 +220,7 @@ void mm_free(void *ptr)
 {
     if (VERBOSE == 2) {
         printf("### Called mm_free ###\n");
+        mm_checkheap(VERBOSE);
     } else if (VERBOSE == 1) {
         mm_checkheap(VERBOSE);
     }
@@ -251,6 +254,7 @@ void *mm_realloc(void *ptr, size_t size)
 {
    if (VERBOSE == 2) {
         printf("### Called mm_realloc ###\n");
+        mm_checkheap(VERBOSE);
     } else if (VERBOSE == 1) {
         mm_checkheap(VERBOSE);
     }
@@ -374,6 +378,7 @@ static void *coalesce(void *bp)
 {
     if (VERBOSE == 2) {
         printf("### Called coalesce ###\n");
+        mm_checkheap(VERBOSE);
     } else if (VERBOSE == 1) {
         mm_checkheap(VERBOSE);
     }
@@ -425,6 +430,7 @@ static void *find_fit(size_t asize)
     /* first fit search */
     if (VERBOSE == 2) {
         printf("### called find_fit ###");
+        mm_checkheap(VERBOSE);
     } else if (VERBOSE == 1) {
         mm_checkheap(VERBOSE);
     }
@@ -446,6 +452,7 @@ static void *extend_heap(size_t words)
 {
     if (VERBOSE == 2) {
         printf("### Called extend_heap ###\n");
+        mm_checkheap(VERBOSE);
     } else if (VERBOSE == 1) {
         mm_checkheap(VERBOSE);
     }
@@ -478,6 +485,7 @@ static void place(void *bp, size_t asize)
 {
     if (VERBOSE == 2) {
         printf("### Called place ###\n");
+        mm_checkheap(VERBOSE);
     } else if (VERBOSE == 1) {
         mm_checkheap(VERBOSE);
     }
@@ -500,7 +508,7 @@ static void place(void *bp, size_t asize)
 /* Debug helper functions if verbose is on */
 void mm_checkheap(int verbose) 
 {
-    if (VERBOSE == 2) {
+    if (verbose == 2) {
         printf("### Checking heap... ###");
     }
     char *bp = heap_listp;
