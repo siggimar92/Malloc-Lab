@@ -303,7 +303,7 @@ void *mm_realloc(void *ptr, size_t size)
         /* We extend the heap and extend the old block to the new heap size */
         size_t extendSize = MAX(asize, CHUNKSIZE);
 
-        newPtr = extend_heap(extendSize/ALIGNMENT);
+        newPtr = extend_heap(extendSize/4);
         size_t newSize = extendSize + GET_SIZE(HDRP(ptr)) - asize;
 
         PUT(HDRP(ptr), PACK(asize, 1));
@@ -343,7 +343,7 @@ void *mm_realloc(void *ptr, size_t size)
             }
         } else if (!GET_SIZE(HDRP(newPtr))) {
             size_t extendSize = MAX(asize, CHUNKSIZE);
-            extend_heap(extendSize/ALIGNMENT);
+            extend_heap(extendSize/4);
             size_t newSize = extendSize + newTotalSize - asize;
 
             PUT(HDRP(ptr), PACK(asize, 1));
